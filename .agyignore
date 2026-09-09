@@ -1,0 +1,23 @@
+# Custom Wellness Clinic .agyignore
+node_modules/
+.next/
+dist/
+build/
+.dart_tool/
+.flutter-plugins
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Ignore heavy media assets
+*.png
+*.jpg
+*.jpeg
+*.svg
+*.mp4
+*.wav
+
+# Block local database files and environment configurations
+*.db
+*.sqlite
+.env*
