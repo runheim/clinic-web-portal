@@ -1,0 +1,17 @@
+node_modules
+.next
+.git
+.gitignore
+.agyignore
+e2e
+tests
+__tests__
+test-results
+playwright-report
+.env*
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+Thumbs.db

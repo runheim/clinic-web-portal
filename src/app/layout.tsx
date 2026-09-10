@@ -46,12 +46,21 @@ export const metadata: Metadata = {
     siteName: "Cognitive Wellness Clinic",
     locale: "en_US",
     type: "website",
+    images: [
+      {
+        url: "/api/og?title=Autonomic%20Vitality%20%26%20Neuro-Metabolic%20Resuscitation",
+        width: 1200,
+        height: 630,
+        alt: "Cognitive Wellness Clinic — Autonomic Vitality & Neuro-Metabolic Resuscitation",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Cognitive Wellness Clinic | Dr. David Andreas Runheim, MD",
     description:
       "Discreet concierge medicine, neuro-metabolic resuscitation, and cognitive longevity. Zero-ePHI compliant clinical architecture.",
+    images: ["/api/og?title=Autonomic%20Vitality%20%26%20Neuro-Metabolic%20Resuscitation"],
   },
 };
 

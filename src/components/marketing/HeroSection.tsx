@@ -84,7 +84,7 @@ export function HeroSection({ onOpenBooking }: HeroSectionProps) {
           <button
             type="button"
             onClick={onOpenBooking}
-            className="w-full sm:w-[223px] h-[49px] rounded-full bg-champagne-gold hover:bg-champagne-gold-light text-text-on-gold font-mono text-[12px] font-bold tracking-[0.1em] uppercase transition-all flex items-center justify-center shadow-[0_0_25px_rgba(212,175,55,0.3)] hover:shadow-[0_0_35px_rgba(212,175,55,0.5)] hover:scale-[1.02] active:scale-[0.98]"
+            className="w-full sm:w-[223px] h-[49px] rounded-full bg-champagne-gold hover:bg-champagne-gold-light text-text-on-gold font-mono text-[12px] font-bold tracking-[0.1em] uppercase transition-all flex items-center justify-center shadow-[0_0_25px_rgba(212,175,55,0.3)] hover:shadow-[0_0_35px_rgba(212,175,55,0.5)] hover:scale-[1.02] active:scale-[0.98] btn-luxury-shimmer"
           >
             Initiate Assessment
           </button>

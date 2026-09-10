@@ -66,7 +66,8 @@ export default function Home() {
       {/* 
         2. Hero Section: Hero Section [4:2640] (MinH: 921px)
       */}
-      <HeroSection onOpenBooking={() => setIsBookingOpen(true)} />
+      <main className="flex-1">
+        <HeroSection onOpenBooking={() => setIsBookingOpen(true)} />
 
       {/* 
         3. Treatment Pillars Grid [4:2712] (Service/Protocol Cards)
@@ -90,8 +91,19 @@ export default function Home() {
             <div
               key={i}
               data-testid={`pillar-card-${i}`}
+              role="button"
+              tabIndex={0}
+              aria-expanded={expandedPillar === i}
+              aria-controls={`pillar-details-${i}`}
+              aria-label={`${p.title} protocol details`}
               onClick={() => setExpandedPillar(expandedPillar === i ? null : i)}
-              className="group p-8 rounded-xl bg-surface-midnight border border-border-midnight hover:border-border-gold-accent transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_30px_rgba(0,0,0,0.5)] flex flex-col justify-between cursor-pointer select-none"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setExpandedPillar(expandedPillar === i ? null : i);
+                }
+              }}
+              className="group p-8 rounded-xl bg-surface-midnight border border-border-midnight hover:border-border-gold-accent transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_30px_rgba(0,0,0,0.5)] flex flex-col justify-between cursor-pointer select-none focus-visible:ring-1 focus-visible:ring-[#D4AF37] focus:outline-none"
             >
               <div>
                 <div className="flex items-center justify-between mb-6">
@@ -107,10 +119,13 @@ export default function Home() {
                   {p.desc}
                 </p>
 
-                {/* Progressive Disclosure Section: Expands within 300ms */}
+                {/* Progressive Disclosure Section: Expands with fluid cubic-bezier transition */}
                 <div
+                  id={`pillar-details-${i}`}
                   data-testid={`pillar-details-${i}`}
-                  className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                  role="region"
+                  aria-label={`${p.title} scientific telemetry`}
+                  className={`overflow-hidden accordion-drawer transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
                     expandedPillar === i ? "max-h-48 opacity-100 mt-4 pt-4 border-t border-border-midnight" : "max-h-0 opacity-0"
                   }`}
                 >
@@ -217,12 +232,13 @@ export default function Home() {
           />
           <button
             type="submit"
-            className="px-8 py-3.5 rounded-full bg-champagne-gold hover:bg-champagne-gold-light text-text-on-gold font-mono text-xs font-bold uppercase tracking-wider transition-all shadow-[0_0_20px_rgba(212,175,55,0.25)] hover:shadow-[0_0_25px_rgba(212,175,55,0.4)]"
+            className="px-8 py-3.5 rounded-full bg-champagne-gold hover:bg-champagne-gold-light text-text-on-gold font-mono text-xs font-bold uppercase tracking-wider transition-all shadow-[0_0_20px_rgba(212,175,55,0.25)] hover:shadow-[0_0_25px_rgba(212,175,55,0.4)] btn-luxury-shimmer"
           >
             Apply for Consultation
           </button>
         </form>
       </section>
+      </main>
 
       {/* 
         6. Footer Component [4:2773]

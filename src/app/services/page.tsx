@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { servicesData } from "@/data/servicesData";
+import { ModalityArtwork } from "@/components/visualizations/ModalityVisualizations";
 
 export const metadata = {
   title: "Clinical Services & Modalities — Cognitive Edge Clinic",
@@ -32,7 +33,7 @@ export default function ServicesPage() {
             </Link>
             <Link
               href="/#intake"
-              className="px-4 py-2 rounded-full bg-champagne-gold hover:bg-champagne-gold-light text-text-on-gold font-mono text-xs font-bold uppercase tracking-wider transition-all"
+              className="px-4 py-2 rounded-full bg-champagne-gold hover:bg-champagne-gold-light text-text-on-gold font-mono text-xs font-bold uppercase tracking-wider transition-all btn-luxury-shimmer"
             >
               Apply for Intake
             </Link>
@@ -61,10 +62,15 @@ export default function ServicesPage() {
             <Link
               key={service.slug}
               href={`/services/${service.slug}`}
-              className="group p-8 rounded-xl bg-surface-midnight border border-border-midnight hover:border-border-gold-accent transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_15px_40px_rgba(0,0,0,0.6)] flex flex-col justify-between"
+              className="group p-7 rounded-xl bg-surface-midnight border border-border-midnight hover:border-border-gold-accent transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_15px_40px_rgba(0,0,0,0.6)] flex flex-col justify-between overflow-hidden"
             >
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
+                {/* Bespoke Scientific Vector Art Thumbnail */}
+                <div className="w-full h-44 rounded-lg overflow-hidden border border-border-midnight/80 group-hover:border-border-gold-subtle transition-colors duration-300 shadow-inner">
+                  <ModalityArtwork slug={service.slug} className="w-full h-full" />
+                </div>
+
+                <div className="flex items-center justify-between pt-1">
                   <span className="font-mono text-xs text-champagne-gold font-bold tracking-widest">
                     0{index + 1}
                   </span>

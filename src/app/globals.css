@@ -17,7 +17,7 @@
   /* Text & Surface Contrast */
   --color-text-surface: #dfe2f1;
   --color-text-surface-variant: #d0c5af;
-  --color-text-surface-muted: #99907c;
+  --color-text-surface-muted: #a89f8c;
 
   /* Typography Font Families */
   --font-display: var(--font-eb-garamond), Georgia, serif;
@@ -33,6 +33,11 @@
 :root {
   --background: #0b0f19;
   --foreground: #dfe2f1;
+}
+
+:focus-visible {
+  outline: 1px solid #d4af37;
+  outline-offset: 2px;
 }
 
 body {
@@ -53,4 +58,56 @@ body {
   font-family: var(--font-mono);
   text-transform: uppercase;
   letter-spacing: 0.1em;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite ease-in-out;
+}
+
+.btn-luxury-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-luxury-shimmer::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.24) 50%,
+    transparent 100%
+  );
+  transform: translateX(-100%);
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+
+.btn-luxury-shimmer:hover::after {
+  animation: shimmer 1.25s infinite;
+}
+
+.border-gold-hairline {
+  border: 1px solid rgba(212, 175, 55, 0.15);
+}
+
+.shadow-gold-aura {
+  box-shadow: 0 8px 32px -4px rgba(212, 175, 55, 0.12);
+}
+
+.accordion-drawer {
+  transition: max-height 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease-in-out;
 }

@@ -31,10 +31,26 @@ export function BookingModal({ isOpen, onClose }: BookingModalProps) {
     }
   }, [isOpen]);
 
+  // Keyboard accessibility: Close on Escape
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-canvas-obsidian/85 backdrop-blur-md animate-in fade-in duration-200">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="booking-modal-title"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-canvas-obsidian/85 backdrop-blur-md animate-in fade-in duration-200"
+    >
       {/* 
         Modal Frame: Matches Figma Frame [4:6747] 
         Rounded-xl corners, Midnight Navy backdrop (#121826), and Champagne Gold accents (#D4AF37)
@@ -47,7 +63,7 @@ export function BookingModal({ isOpen, onClose }: BookingModalProps) {
               <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] animate-pulse" />
               <span>Event Template #982148 &bull; Comprehensive Neuro-Diagnostic Consultation</span>
             </div>
-            <h2 className="font-display text-xl sm:text-2xl text-text-surface font-normal">
+            <h2 id="booking-modal-title" className="font-display text-xl sm:text-2xl text-text-surface font-normal">
               Private Consultation Reservation
             </h2>
             <p className="font-mono text-xs text-text-surface-variant">
@@ -57,7 +73,7 @@ export function BookingModal({ isOpen, onClose }: BookingModalProps) {
           <button
             onClick={onClose}
             aria-label="Close modal"
-            className="text-text-surface-variant hover:text-text-surface p-2 rounded-lg hover:bg-surface-container transition-colors"
+            className="text-text-surface-variant hover:text-text-surface p-2 rounded-lg hover:bg-surface-container transition-colors focus-visible:ring-1 focus-visible:ring-[#D4AF37] focus:outline-none"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />

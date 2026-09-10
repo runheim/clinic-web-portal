@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "test:unit": "jest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "audit:release": "ts-node --project tsconfig.json scripts/audit-release.ts",
+    "package:release": "ts-node --project tsconfig.json scripts/package-release.ts"
   },
   "dependencies": {
     "@calcom/embed-react": "^1.5.3",

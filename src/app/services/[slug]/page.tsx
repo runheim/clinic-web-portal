@@ -5,6 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { servicesData } from "@/data/servicesData";
 import { BookingModal } from "@/components/marketing/BookingModal";
+import { ModalityArtwork } from "@/components/visualizations/ModalityVisualizations";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -14,7 +15,8 @@ export default function ServiceDetailPage({ params }: PageProps) {
   const resolvedParams = use(params);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
 
-  const service = servicesData.find((s) => s.slug === resolvedParams.slug);
+  const targetSlug = resolvedParams.slug === "neuromodulation" ? "tms-neuromodulation" : resolvedParams.slug;
+  const service = servicesData.find((s) => s.slug === targetSlug);
 
   if (!service) {
     notFound();
@@ -42,7 +44,7 @@ export default function ServiceDetailPage({ params }: PageProps) {
           <div className="flex items-center gap-4">
             <button
               onClick={() => setIsBookingOpen(true)}
-              className="px-5 py-2.5 rounded-full bg-champagne-gold hover:bg-champagne-gold-light text-text-on-gold font-mono text-xs font-bold uppercase tracking-wider transition-all shadow-[0_0_15px_rgba(212,175,55,0.3)]"
+              className="px-5 py-2.5 rounded-full bg-champagne-gold hover:bg-champagne-gold-light text-text-on-gold font-mono text-xs font-bold uppercase tracking-wider transition-all shadow-[0_0_15px_rgba(212,175,55,0.3)] btn-luxury-shimmer"
             >
               Book Evaluation
             </button>
@@ -52,18 +54,34 @@ export default function ServiceDetailPage({ params }: PageProps) {
 
       {/* Main Content */}
       <main className="flex-1 max-w-5xl mx-auto w-full px-6 lg:px-10 py-12 space-y-12">
-        {/* Title & Header */}
-        <div className="space-y-4 border-b border-border-midnight pb-8">
-          <div className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-champagne-gold">
-            <span className="w-2 h-2 rounded-full bg-vitality-sage" />
-            <span>{service.tagline}</span>
+        {/* Title & Header with Bespoke Scientific Blueprint */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center border-b border-border-midnight pb-10">
+          <div className="lg:col-span-7 space-y-4">
+            <div className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-champagne-gold">
+              <span className="w-2 h-2 rounded-full bg-vitality-sage" />
+              <span>{service.tagline}</span>
+            </div>
+            <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl text-text-surface leading-tight font-normal">
+              {service.title}
+            </h1>
+            <p className="font-mono text-sm text-vitality-sage">
+              {service.subtitle}
+            </p>
+            <div className="pt-2 flex flex-wrap items-center gap-3 text-xs font-mono text-text-surface-muted">
+              <span className="px-3 py-1 rounded bg-surface-midnight border border-border-midnight text-champagne-gold">
+                Cadence: {service.clinicalCadence.frequency}
+              </span>
+              <span className="px-3 py-1 rounded bg-surface-midnight border border-border-midnight text-text-surface-variant">
+                Session: {service.clinicalCadence.duration}
+              </span>
+            </div>
           </div>
-          <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl text-text-surface leading-tight font-normal">
-            {service.title}
-          </h1>
-          <p className="font-mono text-sm text-vitality-sage">
-            {service.subtitle}
-          </p>
+
+          <div className="lg:col-span-5">
+            <div className="w-full aspect-[16/10] rounded-xl overflow-hidden border border-border-gold-accent shadow-[0_10px_35px_rgba(0,0,0,0.7)] bg-surface-midnight">
+              <ModalityArtwork slug={service.slug} className="w-full h-full" variant="hero" />
+            </div>
+          </div>
         </div>
 
         {/* Executive Abstract Section */}

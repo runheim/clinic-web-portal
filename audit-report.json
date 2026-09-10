@@ -1,0 +1,31 @@
+{
+  "timestamp": "2026-09-10T04:05:50.706Z",
+  "status": "PASSED",
+  "scannedFilesCount": 56,
+  "violationsCount": 0,
+  "violations": [],
+  "checks": {
+    "zeroEphi": {
+      "passed": true,
+      "scannedFiles": 36,
+      "violations": []
+    },
+    "secretsHygiene": {
+      "passed": true,
+      "scannedFiles": 33,
+      "violations": []
+    },
+    "securityHeaders": {
+      "passed": true,
+      "headersFound": [
+        "Content-Security-Policy",
+        "X-Frame-Options",
+        "X-Content-Type-Options",
+        "Referrer-Policy",
+        "Permissions-Policy",
+        "Strict-Transport-Security"
+      ],
+      "missingHeaders": []
+    }
+  }
+}

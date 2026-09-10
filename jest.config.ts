@@ -15,6 +15,7 @@ const config: Config = {
     ],
   },
   testMatch: ["**/__tests__/**/*.test.ts"],
+  modulePathIgnorePatterns: ["<rootDir>/.next/"],
   clearMocks: true,
   verbose: true,
 };
