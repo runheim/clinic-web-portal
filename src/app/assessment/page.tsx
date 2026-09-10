@@ -644,6 +644,18 @@ export default function ClinicalPreScreeningAssessmentPage() {
                   <span>&rarr;</span>
                 </button>
               </div>
+
+              {/* Fail-Safe Concierge Direct Line Fallback */}
+              <div className="pt-2 flex flex-col sm:flex-row items-center justify-between text-[11px] font-mono text-text-surface-muted gap-1">
+                <span>Prefer direct clinical coordination or experiencing connectivity issues?</span>
+                <a
+                  href="sms:+18005550199"
+                  className="text-champagne-gold hover:underline flex items-center gap-1"
+                >
+                  <span>Direct Concierge SMS: +1 (800) 555-0199</span>
+                  &rarr;
+                </a>
+              </div>
             </div>
 
             <div className="flex justify-between items-center pt-2">

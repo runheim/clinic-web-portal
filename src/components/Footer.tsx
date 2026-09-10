@@ -117,6 +117,12 @@ export function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/status" className="text-text-surface-muted hover:text-champagne-gold transition-colors flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-vitality-sage animate-pulse" />
+                  <span>System Status &amp; Enclave Telemetry</span>
+                </Link>
+              </li>
+              <li>
                 <Link href="/login" className="hover:text-champagne-gold transition-colors">
                   Member Login
                 </Link>

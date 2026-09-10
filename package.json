@@ -15,7 +15,9 @@
     "precommit": "ts-node --project tsconfig.json scripts/pre-commit-gate.ts",
     "precommit:bash": "bash scripts/pre-commit-gate.sh",
     "test:live": "ts-node --project tsconfig.json scripts/verify-live-edge.ts",
-    "verify:dns": "ts-node --project tsconfig.json scripts/verify-dns.ts"
+    "verify:dns": "ts-node --project tsconfig.json scripts/verify-dns.ts",
+    "audit:perf": "ts-node --project tsconfig.json scripts/audit-performance.ts",
+    "drill:failover": "ts-node --project tsconfig.json scripts/drill-failover.ts"
   },
   "dependencies": {
     "@calcom/embed-react": "^1.5.3",

@@ -103,6 +103,18 @@ export function BookingModal({ isOpen, onClose }: BookingModalProps) {
             }}
           />
         </div>
+
+        {/* Fail-Safe Concierge Direct Line Fallback */}
+        <div className="p-3 px-6 bg-canvas-obsidian border-t border-[#D4AF37]/20 flex flex-col sm:flex-row items-center justify-between text-[11px] font-mono text-[#99907C] gap-2">
+          <span>Priority Scheduling Assistance &bull; Zero-ePHI Quarantine</span>
+          <a
+            href="sms:+18005550199"
+            className="text-[#D4AF37] hover:underline flex items-center gap-1.5"
+          >
+            <span>Direct Concierge SMS: +1 (800) 555-0199</span>
+            &rarr;
+          </a>
+        </div>
       </div>
     </div>
   );
