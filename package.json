@@ -13,7 +13,9 @@
     "package:release": "ts-node --project tsconfig.json scripts/package-release.ts",
     "test:smoke": "ts-node --project tsconfig.json scripts/smoke-test.ts",
     "precommit": "ts-node --project tsconfig.json scripts/pre-commit-gate.ts",
-    "precommit:bash": "bash scripts/pre-commit-gate.sh"
+    "precommit:bash": "bash scripts/pre-commit-gate.sh",
+    "test:live": "ts-node --project tsconfig.json scripts/verify-live-edge.ts",
+    "verify:dns": "ts-node --project tsconfig.json scripts/verify-dns.ts"
   },
   "dependencies": {
     "@calcom/embed-react": "^1.5.3",

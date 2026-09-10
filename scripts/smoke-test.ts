@@ -1,3 +1,5 @@
+export {};
+
 interface SmokeCheckResult {
   category: "ROUTE" | "SECURITY_HEADER" | "WEBHOOK_GATE";
   target: string;
