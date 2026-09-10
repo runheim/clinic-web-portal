@@ -1,0 +1,77 @@
+/**
+ * Circadian Adaptive Luminescence Design Tokens
+ *
+ * Implements 3 medical-grade color coordinates:
+ * - "Midnight Obsidian" (#0B0F19 background, Champagne Gold accents)
+ * - "OLED Pitch" (#000000 pure black canvas)
+ * - "Amber Dim" (#140E0A background, blue-attenuated warm amber text #E6A23C / #FFB84D)
+ */
+
+:root,
+[data-circadian-mode="obsidian"],
+.circadian-mode-obsidian {
+  --circadian-background: #0B0F19;
+  --circadian-foreground: #DFE2F1;
+  --circadian-surface: #121826;
+  --circadian-surface-container: #1C1F2A;
+  --circadian-surface-elevated: #252B3B;
+  --circadian-text-primary: #DFE2F1;
+  --circadian-text-secondary: #D0C5AF;
+  --circadian-text-muted: #A89F8C;
+  --circadian-accent: #D4AF37;
+  --circadian-accent-hover: #F2CA50;
+  --circadian-accent-muted: #E9C349;
+  --circadian-border: rgba(212, 175, 55, 0.20);
+  --circadian-border-subtle: rgba(212, 175, 55, 0.10);
+  --circadian-glow: rgba(212, 175, 55, 0.12);
+  --circadian-blue-spectral-output: 35%;
+  --circadian-color-temp: 4200K;
+}
+
+[data-circadian-mode="oled"],
+.circadian-mode-oled {
+  --circadian-background: #000000;
+  --circadian-foreground: #DFE2F1;
+  --circadian-surface: #080808;
+  --circadian-surface-container: #121212;
+  --circadian-surface-elevated: #1A1A1A;
+  --circadian-text-primary: #DFE2F1;
+  --circadian-text-secondary: #C5C5D2;
+  --circadian-text-muted: #7A7A88;
+  --circadian-accent: #D4AF37;
+  --circadian-accent-hover: #F2CA50;
+  --circadian-accent-muted: #A88B2A;
+  --circadian-border: rgba(212, 175, 55, 0.15);
+  --circadian-border-subtle: rgba(255, 255, 255, 0.08);
+  --circadian-glow: rgba(212, 175, 55, 0.06);
+  --circadian-blue-spectral-output: 12%;
+  --circadian-color-temp: 3000K;
+}
+
+[data-circadian-mode="amber"],
+.circadian-mode-amber {
+  --circadian-background: #140E0A;
+  --circadian-foreground: #FFB84D;
+  --circadian-surface: #1D140E;
+  --circadian-surface-container: #261A12;
+  --circadian-surface-elevated: #332318;
+  --circadian-text-primary: #FFB84D;
+  --circadian-text-secondary: #E6A23C;
+  --circadian-text-muted: #A36F22;
+  --circadian-accent: #E6A23C;
+  --circadian-accent-hover: #FFB84D;
+  --circadian-accent-muted: #B37A24;
+  --circadian-border: rgba(230, 162, 60, 0.25);
+  --circadian-border-subtle: rgba(230, 162, 60, 0.12);
+  --circadian-glow: rgba(230, 162, 60, 0.20);
+  --circadian-blue-spectral-output: 0%;
+  --circadian-color-temp: 1800K;
+}
+
+/* Smooth transition between circadian luminescence modes */
+html[data-circadian-mode] body,
+html[data-circadian-mode] {
+  transition: background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              color 0.3s ease-in-out,
+              border-color 0.3s ease-in-out;
+}

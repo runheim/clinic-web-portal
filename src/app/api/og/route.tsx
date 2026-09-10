@@ -1,164 +1,89 @@
-import { ImageResponse } from "next/og";
 import { NextRequest } from "next/server";
+import { canvasRenderer, verifyOgSignature } from "@/lib/og/canvasRenderer";
 
 export const runtime = "edge";
 
-export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-  const title = searchParams.get("title") || "Autonomic Vitality & Neuro-Metabolic Resuscitation";
+/**
+ * Edge endpoint serving dynamically generated and cryptographically signed
+ * OpenGraph preview cards for the Cognitive Edge Clinic portal.
+ *
+ * Query Parameters:
+ * - title (string, optional): Modality or topic name. Defaults to clinic core modality.
+ * - category (string, optional): Clinical category badge.
+ * - subtitle (string, optional): Clinical context subtitle.
+ * - sig (string, optional): HMAC-SHA256 signature to verify parameter integrity.
+ */
+export async function GET(req: NextRequest): Promise<Response> {
+  try {
+    const { searchParams } = new URL(req.url);
 
-  return new ImageResponse(
-    (
-      <div
-        style={{
-          width: "100%",
-          height: "100%",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          backgroundColor: "#0B0F19",
-          padding: "36px",
-          fontFamily: "serif",
-        }}
-      >
-        {/* Outer Hairline Gold Border Card */}
-        <div
-          style={{
-            width: "100%",
-            height: "100%",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "space-between",
-            backgroundColor: "#121826",
-            border: "1px solid rgba(212, 175, 55, 0.3)",
-            borderRadius: "20px",
-            padding: "48px 56px",
-            position: "relative",
-            overflow: "hidden",
-          }}
-        >
-          {/* Subtle Radial Glow */}
-          <div
-            style={{
-              position: "absolute",
-              top: "-50px",
-              right: "-50px",
-              width: "360px",
-              height: "360px",
-              borderRadius: "100%",
-              background:
-                "radial-gradient(circle, rgba(212,175,55,0.2) 0%, rgba(78,107,94,0.1) 50%, transparent 70%)",
-            }}
-          />
+    const rawTitle = searchParams.get("title");
+    const rawCategory = searchParams.get("category");
+    const rawSubtitle = searchParams.get("subtitle");
+    const sig = searchParams.get("sig");
 
-          {/* Top Category Badge */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-                border: "1px solid rgba(212, 175, 55, 0.4)",
-                backgroundColor: "rgba(11, 15, 25, 0.85)",
-                borderRadius: "9999px",
-                padding: "8px 18px",
-                width: "fit-content",
-              }}
-            >
-              <div
-                style={{
-                  width: "8px",
-                  height: "8px",
-                  borderRadius: "9999px",
-                  backgroundColor: "#D4AF37",
-                }}
-              />
-              <span
-                style={{
-                  fontSize: "13px",
-                  letterSpacing: "0.2em",
-                  color: "#D4AF37",
-                  textTransform: "uppercase",
-                  fontFamily: "sans-serif",
-                  fontWeight: 600,
-                }}
-              >
-                COGNITIVE WELLNESS CLINIC &bull; QUANTITATIVE NEUROSCIENCE
-              </span>
-            </div>
-          </div>
+    // Default title when none is provided
+    const defaultTitle =
+      "Autonomic Vitality & Neuro-Metabolic Resuscitation";
 
-          {/* Center Dynamic Title */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "16px", margin: "16px 0" }}>
-            <div
-              style={{
-                fontSize: "48px",
-                lineHeight: "1.2",
-                color: "#F6F7FB",
-                fontWeight: 400,
-                letterSpacing: "-0.01em",
-                maxWidth: "1020px",
-              }}
-            >
-              {title}
-            </div>
-            <div
-              style={{
-                fontSize: "19px",
-                color: "#9FA7BC",
-                letterSpacing: "0.04em",
-                fontFamily: "sans-serif",
-              }}
-            >
-              Discreet Concierge Neurology &amp; Stoichiometric Neuro-Metabolic Resuscitation
-            </div>
-          </div>
+    // Sanitize and normalize title
+    const title =
+      rawTitle && rawTitle.trim().length > 0
+        ? rawTitle.slice(0, 140).trim()
+        : defaultTitle;
 
-          {/* Bottom Metadata & Zero-ePHI Watermark */}
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              borderTop: "1px solid rgba(212, 175, 55, 0.2)",
-              paddingTop: "22px",
-              fontFamily: "sans-serif",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <span style={{ fontSize: "16px", color: "#F6F7FB", fontWeight: 600 }}>
-                Dr. Andreas Runheim, MD
-              </span>
-              <span style={{ fontSize: "14px", color: "#9FA7BC" }}>
-                &bull; Board-Certified Neurologist
-              </span>
-            </div>
-
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                fontSize: "11px",
-                letterSpacing: "0.15em",
-                color: "#4E6B5E",
-                textTransform: "uppercase",
-                fontFamily: "monospace",
-                fontWeight: 600,
-              }}
-            >
-              <span>ZERO-ePHI QUARANTINE CERTIFIED</span>
-              <span>&bull;</span>
-              <span>HIPAA BAA SECURE</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    ),
-    {
-      width: 1200,
-      height: 630,
+    // Optional cryptographic signature validation
+    if (sig) {
+      const isValid = verifyOgSignature(title, sig);
+      if (!isValid) {
+        return new Response(
+          JSON.stringify({
+            error: "Forbidden: Cryptographic signature verification failed",
+            code: "INVALID_OG_SIGNATURE",
+            zero_ephi_status: "quarantined",
+          }),
+          {
+            status: 403,
+            headers: {
+              "content-type": "application/json",
+              "cache-control": "no-store, max-age=0",
+              "x-zero-ephi-quarantine": "enforced",
+            },
+          }
+        );
+      }
     }
-  );
+
+    // Sanitize and normalize category & subtitle
+    const category =
+      rawCategory && rawCategory.trim().length > 0
+        ? rawCategory.slice(0, 80).trim()
+        : "QUANTITATIVE NEUROSCIENCE & REGENERATIVE METABOLISM";
+
+    const subtitle =
+      rawSubtitle && rawSubtitle.trim().length > 0
+        ? rawSubtitle.slice(0, 160).trim()
+        : "Discreet Concierge Neurology & Stoichiometric Neuro-Metabolic Resuscitation";
+
+    return canvasRenderer({
+      title,
+      category,
+      subtitle,
+    });
+  } catch {
+    // Quarantine error details from leaking potential ePHI or internal stack traces
+    return new Response(
+      JSON.stringify({
+        error: "Internal Server Error rendering OpenGraph image",
+        quarantine: "enforced",
+      }),
+      {
+        status: 500,
+        headers: {
+          "content-type": "application/json",
+          "x-zero-ephi-quarantine": "enforced",
+        },
+      }
+    );
+  }
 }
