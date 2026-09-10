@@ -2,10 +2,10 @@
   "releaseVersion": "4.0.0",
   "releaseTag": "v4.0.0",
   "releaseStatus": "IMMUTABLE_FINAL_CERTIFIED",
-  "certificationDate": "2026-09-10T05:55:49.884Z",
-  "gitCommit": "6ada6220d427c3df83dab6ec5020ab0a2b8bdf8e",
+  "certificationDate": "2026-09-10T05:58:23.687Z",
+  "gitCommit": "6fed56f41184fe448ce33ea26265a3a4885003cb",
   "gitTag": "v4.0.0",
-  "compositeBundleSha256": "16513a8ae89f51508cf07f2a4974e92b66baf490f8145963a3eb74c80783f15d",
+  "compositeBundleSha256": "fa946e449f5f6bf07882ebb1909856daccef57f4abc3dc23066b706ea91b09b3",
   "summary": {
     "totalRoutes": 17,
     "staticRoutes": 13,
@@ -890,7 +890,7 @@
       {
         "relativePath": ".next/server/middleware-build-manifest.js",
         "sizeBytes": 639,
-        "sha256": "4aba6c2d997e6d5d33f8fa2f695f5cc2a9f93a8679f39da739f10feea04f5e21"
+        "sha256": "d1e636326d59e8964867c7af5e71150f44a6307ed4667e92c9eca62ce5d15c08"
       },
       {
         "relativePath": ".next/server/next-font-manifest.js",
