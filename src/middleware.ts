@@ -4,6 +4,7 @@ import type { NextRequest } from "next/server";
 const BYPASS_PREFIXES = [
   "/_next",
   "/static",
+  "/public",
   "/icons",
   "/maintenance",
   "/manifest.json",
@@ -47,8 +48,8 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * - public icons & assets
+     * - icons
      */
-    "/((?!_next/static|_next/image|favicon.ico|icons/.*).*)",
+    "/((?!_next/static|_next/image|favicon.ico|icons).*)",
   ],
 };

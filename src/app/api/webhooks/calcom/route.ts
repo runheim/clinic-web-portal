@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import crypto from "crypto";
 import { executeWithCircuitBreaker, getSpruceFallbackResponse } from "@/lib/circuitBreaker";
+import { verifyHmacSignature } from "@/lib/crypto/signatures";
 
 export async function POST(req: NextRequest) {
   try {
@@ -16,9 +16,7 @@ export async function POST(req: NextRequest) {
           { status: 401 }
         );
       }
-      const hmac = crypto.createHmac("sha256", secret);
-      const digest = hmac.update(rawBody).digest("hex");
-      if (signature !== digest) {
+      if (!verifyHmacSignature(rawBody, signature, secret)) {
         return NextResponse.json(
           { error: "Invalid HMAC signature" },
           { status: 401 }
