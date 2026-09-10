@@ -125,16 +125,20 @@ export function HeroSection({ onOpenBooking }: HeroSectionProps) {
                 WebkitMaskImage: "radial-gradient(ellipse 95% 90% at 50% 50%, black 65%, transparent 100%)",
               }}
             >
-              {/* HTML5 Video */}
+              {/* HTML5 Video with Pre-Warming */}
               <video
                 autoPlay
                 loop
                 muted
                 playsInline
+                preload="metadata"
                 data-testid="hero-video"
                 onLoadedData={() => setIsVideoLoaded(true)}
+                onPlay={() => setIsVideoLoaded(true)}
                 onError={() => setVideoError(true)}
-                className="w-full h-full object-cover opacity-90"
+                className={`w-full h-full object-cover transition-opacity duration-700 ${
+                  isVideoLoaded && !videoError ? "opacity-90" : "opacity-0"
+                }`}
               >
                 <source
                   src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4"
@@ -142,30 +146,103 @@ export function HeroSection({ onOpenBooking }: HeroSectionProps) {
                 />
               </video>
 
-              {/* Elegant Loading Skeleton / Poster Fallback Matching Dark Theme */}
-              {(!isVideoLoaded || videoError) && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-surface-midnight via-canvas-obsidian to-black p-6 text-center animate-pulse">
-                  {/* Glowing Pulse Reticle */}
-                  <div className="w-16 h-16 rounded-full bg-champagne-gold/10 border border-[#D4AF37]/30 flex items-center justify-center text-champagne-gold mb-4 shadow-[0_0_30px_rgba(212,175,55,0.25)]">
-                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1.5}
-                        d="M21 12a9 9 0 11-18 0 9 9 0 0118 0zM15.91 11.672a.375.375 0 010 .656l-5.603 3.113a.375.375 0 01-.557-.328V8.887c0-.286.307-.466.557-.327l5.603 3.112z"
-                      />
-                    </svg>
-                  </div>
+              {/* 1. Adaptive SVG Gradient Shimmer Placeholder (Renders until metadata loads) */}
+              {!isVideoLoaded && !videoError && (
+                <div
+                  data-testid="video-shimmer-placeholder"
+                  className="absolute inset-0 flex flex-col items-center justify-center bg-[#0B0F19] p-6 text-center z-20"
+                >
+                  {/* Lightweight SVG Shimmer Canvas */}
+                  <svg
+                    className="w-full h-full absolute inset-0 opacity-40"
+                    preserveAspectRatio="none"
+                    viewBox="0 0 800 450"
+                  >
+                    <defs>
+                      <linearGradient id="heroShimmer" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#0B0F19" stopOpacity="0.8" />
+                        <stop offset="35%" stopColor="#121826" stopOpacity="0.9" />
+                        <stop offset="50%" stopColor="#D4AF37" stopOpacity="0.18">
+                          <animate
+                            attributeName="offset"
+                            values="-0.5; 1.5"
+                            dur="2s"
+                            repeatCount="indefinite"
+                          />
+                        </stop>
+                        <stop offset="65%" stopColor="#121826" stopOpacity="0.9" />
+                        <stop offset="100%" stopColor="#0B0F19" stopOpacity="0.8" />
+                      </linearGradient>
+                    </defs>
+                    <rect width="100%" height="100%" fill="url(#heroShimmer)" />
+                  </svg>
 
-                  {/* Skeleton Bars */}
-                  <div className="space-y-2 max-w-md w-full flex flex-col items-center">
-                    <div className="h-4 bg-surface-container rounded w-3/4" />
-                    <div className="h-3 bg-surface-container/60 rounded w-1/2 mt-1" />
+                  {/* Pulsing Central Reticle & Status */}
+                  <div className="relative z-10 flex flex-col items-center">
+                    <div className="w-16 h-16 rounded-full bg-[#121826] border border-[#D4AF37]/35 flex items-center justify-center text-champagne-gold mb-3 shadow-[0_0_35px_rgba(212,175,55,0.2)]">
+                      <svg className="w-7 h-7 animate-pulse text-[#D4AF37]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={1.5}
+                          d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={1.5}
+                          d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                    </div>
+                    <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-champagne-gold">
+                      Pre-Warming Neural Briefing Stream...
+                    </span>
+                    <span className="font-mono text-[10px] text-text-surface-muted mt-1">
+                      Adaptive SVG Shimmer Active &bull; Zero-ePHI Buffer
+                    </span>
                   </div>
+                </div>
+              )}
 
-                  <p className="mt-4 font-mono text-[11px] text-champagne-gold tracking-widest uppercase">
-                    Initializing Google Flow High-Resolution Stream...
+              {/* 2. Graceful Fallback: Quiet-Luxury Obsidian/Champagne Gold Poster on Error */}
+              {videoError && (
+                <div
+                  data-testid="video-fallback-poster"
+                  className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-[#121826] via-[#0B0F19] to-black p-6 sm:p-10 text-center z-20"
+                >
+                  <div className="w-16 h-16 rounded-full bg-[#0B0F19] border border-[#D4AF37]/40 flex items-center justify-center text-[#D4AF37] mb-3 shadow-[0_0_25px_rgba(212,175,55,0.2)]">
+                    <span className="font-serif text-2xl font-bold tracking-wider text-[#D4AF37]">
+                      CE
+                    </span>
+                  </div>
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0B0F19] border border-[#D4AF37]/25 mb-2 font-mono text-[10px] text-[#D4AF37] uppercase tracking-widest">
+                    <span>Clinical Briefing Sanctuary Standby</span>
+                  </div>
+                  <h3 className="font-display text-lg sm:text-xl text-[#DFE2F1] max-w-md">
+                    Google Flow Cortical Hemodynamics &amp; VITACOG Stoichiometry
+                  </h3>
+                  <p className="font-sans text-xs text-[#99907C] max-w-sm mt-1">
+                    Adaptive static sanctuary engaged. Stream playback paused or offline; review complete briefings in the Clinical Theater.
                   </p>
+                  <div className="mt-4 flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setVideoError(false);
+                        setIsVideoLoaded(false);
+                      }}
+                      className="px-4 py-1.5 rounded-full bg-[#1A2234] border border-[#D4AF37]/30 text-champagne-gold font-mono text-[10px] uppercase tracking-wider hover:bg-[#222C42] transition-colors cursor-pointer"
+                    >
+                      Retry Stream
+                    </button>
+                    <Link
+                      href="/briefings"
+                      className="px-4 py-1.5 rounded-full bg-champagne-gold text-text-on-gold font-mono text-[10px] font-bold uppercase tracking-wider hover:bg-champagne-gold-light transition-colors"
+                    >
+                      Video Archive &rarr;
+                    </Link>
+                  </div>
                 </div>
               )}
 

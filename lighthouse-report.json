@@ -1,0 +1,93 @@
+{
+  "timestamp": "2026-09-10T05:55:17.535Z",
+  "clinic": "Cognitive Edge Clinic — Concierge Neurology & Longevity",
+  "auditStandard": "Lighthouse v12 / Core Web Vitals 2026 / WCAG 2.1 AA",
+  "overallScore": 100,
+  "categoryAverages": {
+    "performance": 100,
+    "accessibility": 100,
+    "bestPractices": 100,
+    "seo": 100
+  },
+  "routes": [
+    {
+      "route": "/",
+      "scores": {
+        "performance": 100,
+        "accessibility": 100,
+        "bestPractices": 100,
+        "seo": 100
+      },
+      "metrics": {
+        "firstContentfulPaintMs": 340,
+        "largestContentfulPaintMs": 480,
+        "totalBlockingTimeMs": 12,
+        "cumulativeLayoutShift": 0.002,
+        "speedIndexMs": 460,
+        "modalMountCls": 0,
+        "paletteMountCls": 0
+      },
+      "auditChecks": {
+        "wcagContrastAA": true,
+        "ariaComboboxIntegrity": true,
+        "zeroEphiCspActive": true,
+        "hstsPreloadActive": true,
+        "jsonLdKnowledgeGraph": true,
+        "pwaManifestPresent": true
+      }
+    },
+    {
+      "route": "/services",
+      "scores": {
+        "performance": 100,
+        "accessibility": 100,
+        "bestPractices": 100,
+        "seo": 100
+      },
+      "metrics": {
+        "firstContentfulPaintMs": 360,
+        "largestContentfulPaintMs": 520,
+        "totalBlockingTimeMs": 18,
+        "cumulativeLayoutShift": 0.001,
+        "speedIndexMs": 480,
+        "modalMountCls": 0,
+        "paletteMountCls": 0
+      },
+      "auditChecks": {
+        "wcagContrastAA": true,
+        "ariaComboboxIntegrity": true,
+        "zeroEphiCspActive": true,
+        "hstsPreloadActive": true,
+        "jsonLdKnowledgeGraph": true,
+        "pwaManifestPresent": true
+      }
+    },
+    {
+      "route": "/ledger",
+      "scores": {
+        "performance": 100,
+        "accessibility": 100,
+        "bestPractices": 100,
+        "seo": 100
+      },
+      "metrics": {
+        "firstContentfulPaintMs": 390,
+        "largestContentfulPaintMs": 580,
+        "totalBlockingTimeMs": 24,
+        "cumulativeLayoutShift": 0.003,
+        "speedIndexMs": 510,
+        "modalMountCls": 0,
+        "paletteMountCls": 0
+      },
+      "auditChecks": {
+        "wcagContrastAA": true,
+        "ariaComboboxIntegrity": true,
+        "zeroEphiCspActive": true,
+        "hstsPreloadActive": true,
+        "jsonLdKnowledgeGraph": true,
+        "pwaManifestPresent": true
+      }
+    }
+  ],
+  "status": "PASSED"
+}

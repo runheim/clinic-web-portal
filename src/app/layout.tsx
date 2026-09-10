@@ -1,5 +1,6 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { EB_Garamond, Hanken_Grotesk, JetBrains_Mono } from "next/font/google";
+import { MedicalSchema } from "@/components/MedicalSchema";
 import "./globals.css";
 
 const ebGaramond = EB_Garamond({
@@ -20,8 +21,15 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
+export const viewport: Viewport = {
+  themeColor: "#0B0F19",
+  width: "device-width",
+  initialScale: 1,
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL("https://cognitiveedgeclinic.com"),
+  manifest: "/manifest.json",
   title: {
     default: "Cognitive Wellness Clinic — Autonomic Vitality & Neuro-Metabolic Resuscitation",
     template: "%s | Cognitive Wellness Clinic",
@@ -38,6 +46,11 @@ export const metadata: Metadata = {
     "Stoichiometric Analysis",
     "Zero-ePHI",
   ],
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Cognitive Edge Clinic",
+  },
   openGraph: {
     title: "Cognitive Wellness Clinic — Discreet Concierge Neurology",
     description:
@@ -64,51 +77,6 @@ export const metadata: Metadata = {
   },
 };
 
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@type": "MedicalClinic",
-  name: "Cognitive Wellness Clinic",
-  url: "https://cognitiveedgeclinic.com",
-  logo: "https://cognitiveedgeclinic.com/logo.png",
-  description:
-    "Discreet concierge neurology, neuro-metabolic resuscitation, and cognitive longevity clinic led by Dr. David Andreas Runheim, MD.",
-  medicalSpecialty: [
-    "Neurology",
-    "Neuro-Metabolic Resuscitation",
-    "Cognitive Longevity",
-  ],
-  founder: {
-    "@type": "Physician",
-    name: "Dr. David Andreas Runheim, MD",
-    medicalSpecialty: "Neurology",
-    jobTitle: "Founder & Medical Director",
-  },
-  knowsAbout: [
-    "Neuro-Metabolic Resuscitation",
-    "Autonomic Nervous System Regulation",
-    "Mitochondrial Biogenesis",
-    "Stoichiometric Micronutrient Infusions",
-    "Zero-ePHI Architecture & Patient Privacy",
-  ],
-  availableService: [
-    {
-      "@type": "MedicalProcedure",
-      name: "Stoichiometric Neuro-Nutrient Infusions",
-      description: "Direct vascular delivery of metabolic cofactors and mitochondrial precursors.",
-    },
-    {
-      "@type": "MedicalProcedure",
-      name: "Neuro-Autonomic Balance & HRV Modulation",
-      description: "Precision parasympathetic tone reactivation and baroreflex optimization.",
-    },
-    {
-      "@type": "MedicalProcedure",
-      name: "Cerebral Microcirculation Optimization",
-      description: "Endothelial nitric oxide bioavailability protocols and capillary perfusion.",
-    },
-  ],
-};
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -120,10 +88,7 @@ export default function RootLayout({
       className={`${ebGaramond.variable} ${hankenGrotesk.variable} ${jetbrainsMono.variable} h-full antialiased dark`}
     >
       <body className="min-h-full flex flex-col bg-canvas-obsidian text-text-surface selection:bg-champagne-gold selection:text-text-on-gold">
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
+        <MedicalSchema />
         {children}
       </body>
     </html>

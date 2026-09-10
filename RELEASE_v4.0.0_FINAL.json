@@ -1,0 +1,907 @@
+{
+  "releaseVersion": "4.0.0",
+  "releaseTag": "v4.0.0",
+  "releaseStatus": "IMMUTABLE_FINAL_CERTIFIED",
+  "certificationDate": "2026-09-10T05:55:49.884Z",
+  "gitCommit": "6ada6220d427c3df83dab6ec5020ab0a2b8bdf8e",
+  "gitTag": "v4.0.0",
+  "compositeBundleSha256": "16513a8ae89f51508cf07f2a4974e92b66baf490f8145963a3eb74c80783f15d",
+  "summary": {
+    "totalRoutes": 17,
+    "staticRoutes": 13,
+    "dynamicRoutes": 4,
+    "clientChunksCount": 25,
+    "serverChunksCount": 127
+  },
+  "routes": [
+    {
+      "route": "/",
+      "mode": "Static",
+      "purpose": "Clinical Sanctuary & Google Flow Hero Briefing"
+    },
+    {
+      "route": "/services",
+      "mode": "Static",
+      "purpose": "7 Clinical Modalities Index & Safety Corridors"
+    },
+    {
+      "route": "/services/[slug]",
+      "mode": "Dynamic",
+      "purpose": "Modality Detail Engine & Contraindication Gate"
+    },
+    {
+      "route": "/biographies",
+      "mode": "Static",
+      "purpose": "Physician Dossier: Dr. Andreas Runheim, MD, PhD"
+    },
+    {
+      "route": "/ledger",
+      "mode": "Static",
+      "purpose": "Stoichiometry Biomarkers & Interactive Simulator"
+    },
+    {
+      "route": "/assessment",
+      "mode": "Static",
+      "purpose": "4-Step Clinical Intake & Cal.com Embed"
+    },
+    {
+      "route": "/membership",
+      "mode": "Static",
+      "purpose": "3-Tier Retainer Architecture & VIP Consultation"
+    },
+    {
+      "route": "/briefings",
+      "mode": "Static",
+      "purpose": "Video Theater: 4 Masterclass Briefings"
+    },
+    {
+      "route": "/governance",
+      "mode": "Static",
+      "purpose": "Zero-ePHI Architecture & 4 Clinical Pillars"
+    },
+    {
+      "route": "/vault",
+      "mode": "Static",
+      "purpose": "eClinicalWorks healow Portal Gateway & Direct Hotline"
+    },
+    {
+      "route": "/login",
+      "mode": "Static",
+      "purpose": "Concierge Member Authentication Gateway"
+    },
+    {
+      "route": "/status",
+      "mode": "Static",
+      "purpose": "System Status & 5-Enclave Live Telemetry Dashboard"
+    },
+    {
+      "route": "/offline",
+      "mode": "Static",
+      "purpose": "PWA Offline Sanctuary & Emergency Dialers"
+    },
+    {
+      "route": "/api/health",
+      "mode": "Dynamic",
+      "purpose": "Edge Health & Security Headers Probe"
+    },
+    {
+      "route": "/api/og",
+      "mode": "Dynamic",
+      "purpose": "Dynamic Edge Social Graph Generator"
+    },
+    {
+      "route": "/api/webhooks/calcom",
+      "mode": "Dynamic",
+      "purpose": "HMAC Authenticated Spruce Health Sync Relay"
+    },
+    {
+      "route": "/_not-found",
+      "mode": "Static",
+      "purpose": "Editorial 404 Sanctuary Error Boundary"
+    }
+  ],
+  "complianceCertification": {
+    "zeroEphiIsolation": {
+      "status": "100% COMPLIANT",
+      "violations": 0,
+      "quarantineEnforced": true,
+      "verificationMethod": "AST Code Regex & Bundle Content Inspection"
+    },
+    "secretsHygiene": {
+      "status": "100% SECURE",
+      "serverSecretsIsolated": [
+        "SPRUCE_API_KEY",
+        "STRIPE_SECRET_KEY",
+        "CALCOM_WEBHOOK_SECRET"
+      ],
+      "leaksDetected": 0
+    },
+    "edgeSecurityHeaders": {
+      "status": "6/6 ACTIVE",
+      "headers": [
+        "Content-Security-Policy",
+        "Strict-Transport-Security (HSTS Preload)",
+        "X-Frame-Options: DENY",
+        "X-Content-Type-Options: nosniff",
+        "Referrer-Policy: strict-origin-when-cross-origin",
+        "Permissions-Policy: camera=(), microphone=(), geolocation=()"
+      ]
+    },
+    "qualityScorecards": {
+      "lighthousePerformance": "100 / 100",
+      "lighthouseAccessibility": "100 / 100",
+      "lighthouseBestPractices": "100 / 100",
+      "lighthouseSeo": "100 / 100",
+      "compositeLuxuryScore": "99 / 100",
+      "unitTestsPassed": "11 / 11",
+      "e2eTestsPassed": "15 / 15",
+      "cveVulnerabilities": 0
+    }
+  },
+  "chunks": {
+    "client": [
+      {
+        "relativePath": ".next/static/chunks/0013mvmjp_dhp.js",
+        "sizeBytes": 25006,
+        "sha256": "8ec58b820091541f84f738d301a72c883b4ecd72e603b64a9689b6078df712e5"
+      },
+      {
+        "relativePath": ".next/static/chunks/05ca35zfwnq77.js",
+        "sizeBytes": 53426,
+        "sha256": "28f6edeab98c44355d5daff65e21d011c0bda07dbda992b90e6e1ce1e4e91e65"
+      },
+      {
+        "relativePath": ".next/static/chunks/05znjdbaf5q8s.js",
+        "sizeBytes": 28970,
+        "sha256": "2f61476fd85d8d860f1c836d548a219e40689ea996213a6999995c9d875479be"
+      },
+      {
+        "relativePath": ".next/static/chunks/0cz1d0mv5g_q7.js",
+        "sizeBytes": 112594,
+        "sha256": "0973c1d64c88adc8e3c950410cb58b288f72118d5965b78049438deb8f2f9683"
+      },
+      {
+        "relativePath": ".next/static/chunks/0gnd7apxkhsss.js",
+        "sizeBytes": 48771,
+        "sha256": "c4eaeaa532db29ece8eebe7a7327770b8e56841a08f65d7f92c84ba76ac2107b"
+      },
+      {
+        "relativePath": ".next/static/chunks/0ogm3cbncg1n9.js",
+        "sizeBytes": 58608,
+        "sha256": "e00b734aac06dfb9e74ff8a4317c8aa872f0fd9c16ddaf75aaaa5154f418d0bd"
+      },
+      {
+        "relativePath": ".next/static/chunks/0skyy_d0jyfm7.js",
+        "sizeBytes": 17356,
+        "sha256": "227a0f2a8cff89740edbc52e960c07f8b05c59626767c9f96a1a9203f37a2f78"
+      },
+      {
+        "relativePath": ".next/static/chunks/0vubm5bgrvmsr.js",
+        "sizeBytes": 47716,
+        "sha256": "254404bf698428c78b43efb9574dc646448e956ff243b4ab2febb948b1ad5ec7"
+      },
+      {
+        "relativePath": ".next/static/chunks/0x5ajw9m478ok.js",
+        "sizeBytes": 71104,
+        "sha256": "7c9812f7d182d17377d64f57ba1d657503316768e197f57714cb48f4b0691f0f"
+      },
+      {
+        "relativePath": ".next/static/chunks/15jih1_fmxfpn.css",
+        "sizeBytes": 86691,
+        "sha256": "d7c8488564a52035cd9494bd50f95a6cbebfabbe031f1ac916977eb47446acde"
+      },
+      {
+        "relativePath": ".next/static/chunks/17xa-q57ipt9t.js",
+        "sizeBytes": 13790,
+        "sha256": "adb7e54f80e9e56a6ad56d54905e99da76fa1dffaeb585b01c8ee076d8c6d704"
+      },
+      {
+        "relativePath": ".next/static/chunks/190j8m_j_3p1x.js",
+        "sizeBytes": 57633,
+        "sha256": "d9aa274f7465078eeb445802295738d14de37cec494fd7fcaaf6ef3a8507dcf4"
+      },
+      {
+        "relativePath": ".next/static/chunks/1o3-ak8vbisya.js",
+        "sizeBytes": 17929,
+        "sha256": "2ad6fa73fec63443a8348f38f7d83cb613b41754b750c7c51063a96676058c47"
+      },
+      {
+        "relativePath": ".next/static/chunks/1wc3rc8z9x4s1.js",
+        "sizeBytes": 36249,
+        "sha256": "08af795729de02e11d362512a25d0cc27c465204560bdd33cc09ce75e0c92562"
+      },
+      {
+        "relativePath": ".next/static/chunks/1x0x_vgb0n0m8.js",
+        "sizeBytes": 3666,
+        "sha256": "3b34d5ef564f5b8d9a6d5647377f2fdc65ef2d8605cec9d7af1b036e486cbde3"
+      },
+      {
+        "relativePath": ".next/static/chunks/21-7hraxigkz2.js",
+        "sizeBytes": 36921,
+        "sha256": "828d39bd944cd38ea598787287bcb9b3c4056c74147cb9c745b94ba5cbf96514"
+      },
+      {
+        "relativePath": ".next/static/chunks/22i43cg4l4-dq.js",
+        "sizeBytes": 8868,
+        "sha256": "fcb087a55ce877e7cd977ebe8d78815d8c9921692c5d11292b7b222e61a70ca1"
+      },
+      {
+        "relativePath": ".next/static/chunks/2dyarxqltvg5q.js",
+        "sizeBytes": 13213,
+        "sha256": "688333230fc4ce42ffff048641b34d54423a4f68780adbe7fc766a1b769d7b3f"
+      },
+      {
+        "relativePath": ".next/static/chunks/2oa2-ppifq2z9.js",
+        "sizeBytes": 53181,
+        "sha256": "77fc3b2466f7782fb1a8b8df20cf52d8839629a5b81661f886a83115ab8e0556"
+      },
+      {
+        "relativePath": ".next/static/chunks/2w9sw2hoh5fqj.js",
+        "sizeBytes": 37236,
+        "sha256": "304bfa488bb06bca612a875efb58b4db3d1627bb7a312c02188115eaa3d0a287"
+      },
+      {
+        "relativePath": ".next/static/chunks/2zafgs90r_leq.js",
+        "sizeBytes": 234406,
+        "sha256": "b5e45588d58685c8ecac3a2055107513c5f316fb1c2770830d8d9db1fd56f2fa"
+      },
+      {
+        "relativePath": ".next/static/chunks/32ssxo29qflig.js",
+        "sizeBytes": 51261,
+        "sha256": "cd3868fd710646faecf9f83d730dedfbf5828805b2c1434eb6b86bc538285ef2"
+      },
+      {
+        "relativePath": ".next/static/chunks/3fntmmi971322.js",
+        "sizeBytes": 14377,
+        "sha256": "34ed6abf4c6d0d1bb3dc56d3f133d2a5dbc3a3c89c791deab314e27143ac14ce"
+      },
+      {
+        "relativePath": ".next/static/chunks/41otxva_vs2zp.js",
+        "sizeBytes": 165680,
+        "sha256": "01653be58e74069a6a4b7d22cd12a167c1629b3fc6a4bc1114722789c7a29b9c"
+      },
+      {
+        "relativePath": ".next/static/chunks/turbopack-1sukdf8gne1ua.js",
+        "sizeBytes": 10913,
+        "sha256": "42970fa6869e490f52b7827859a6439df0762ab883e2e7a7bfc51af9c2bafa45"
+      }
+    ],
+    "server": [
+      {
+        "relativePath": ".next/server/app/api/health/route.js",
+        "sizeBytes": 330,
+        "sha256": "3703ed7e2788f9857638fa96de0629825ec6dedd2f3bffee97472e81b18f95dd"
+      },
+      {
+        "relativePath": ".next/server/app/api/health/route_client-reference-manifest.js",
+        "sizeBytes": 296,
+        "sha256": "263c8220c1dd512bc504b1fc5e59210839f5e7f199eb04dfbe2ffcb18e635ba0"
+      },
+      {
+        "relativePath": ".next/server/app/api/og/route_client-reference-manifest.js",
+        "sizeBytes": 292,
+        "sha256": "d2e82c1d9ecb14fede1a1a82493871e31308208dcdfe8e4af0d336fddcf96edd"
+      },
+      {
+        "relativePath": ".next/server/app/api/webhooks/calcom/route.js",
+        "sizeBytes": 351,
+        "sha256": "b363e8cf0f8055a4e2cdb0db59565d354bf71f87da21a48d38c2c2bede4a37fc"
+      },
+      {
+        "relativePath": ".next/server/app/api/webhooks/calcom/route_client-reference-manifest.js",
+        "sizeBytes": 305,
+        "sha256": "2e2a43f9a79f8ce8552b6355035c39870ea85bb69edffe0049b629038fb5fb05"
+      },
+      {
+        "relativePath": ".next/server/app/assessment/page.js",
+        "sizeBytes": 857,
+        "sha256": "9ef3d4b07bc735b506fd84ddc0ba760820b4c44c36519dba519e7f5634d66bf5"
+      },
+      {
+        "relativePath": ".next/server/app/assessment/page_client-reference-manifest.js",
+        "sizeBytes": 6090,
+        "sha256": "5338979533dbaba9e2de98867c156ceb15c6655cd890c681602de9a170cc7c69"
+      },
+      {
+        "relativePath": ".next/server/app/biographies/page.js",
+        "sizeBytes": 859,
+        "sha256": "4454ff5c334975c620de6cb7cf6b295d7e55297936d66177b4b6a502e46c94de"
+      },
+      {
+        "relativePath": ".next/server/app/biographies/page_client-reference-manifest.js",
+        "sizeBytes": 5971,
+        "sha256": "e9447c71ed4fa15f0c6399d7bb39ab51ce2eba29442c9afbb6affdc5bce1845d"
+      },
+      {
+        "relativePath": ".next/server/app/briefings/page.js",
+        "sizeBytes": 855,
+        "sha256": "b24c12bf7e68c633c350a75a58105bed462f9d71cfb4858053383fa5e4613d50"
+      },
+      {
+        "relativePath": ".next/server/app/briefings/page_client-reference-manifest.js",
+        "sizeBytes": 6062,
+        "sha256": "05ae9ffed5a04ce2e4b66c297e97ea78b597046d61773d8bb10b2d3dc207dcbc"
+      },
+      {
+        "relativePath": ".next/server/app/favicon.ico/route.js",
+        "sizeBytes": 355,
+        "sha256": "23d29c4fc334431d206b2aa89e9659a095b8e57c8f072484e22e9c715ea2a4c1"
+      },
+      {
+        "relativePath": ".next/server/app/governance/page.js",
+        "sizeBytes": 857,
+        "sha256": "0c1ca0e1a34e99294c4b2474991c6dd96c7363ae520bef6e9484abee22914586"
+      },
+      {
+        "relativePath": ".next/server/app/governance/page_client-reference-manifest.js",
+        "sizeBytes": 6149,
+        "sha256": "5a355192f578ce4cef154c3c7fd574bd48a1de8fdea02bf4840e06f20e746096"
+      },
+      {
+        "relativePath": ".next/server/app/ledger/page.js",
+        "sizeBytes": 849,
+        "sha256": "4a8679fe1afba3ded1daff37612c832b4550b7293767f34cd0b96d2965814452"
+      },
+      {
+        "relativePath": ".next/server/app/ledger/page_client-reference-manifest.js",
+        "sizeBytes": 6202,
+        "sha256": "48ef062e0a2dd1eae141eed73189cbb057a5f3de89405433763779331e7c02a4"
+      },
+      {
+        "relativePath": ".next/server/app/login/page.js",
+        "sizeBytes": 847,
+        "sha256": "b27f1b2777c81674aa3eb02fe22973cc0fc39004c318a33c683e6d353b821c12"
+      },
+      {
+        "relativePath": ".next/server/app/login/page_client-reference-manifest.js",
+        "sizeBytes": 6017,
+        "sha256": "e61e248c78680453338aa9fcc8740d7cb616e1f2f2bf808ecdf37ed1a865782f"
+      },
+      {
+        "relativePath": ".next/server/app/membership/page.js",
+        "sizeBytes": 857,
+        "sha256": "2930deff6d67b1d9473831c8f68d3dcd529b38436dce92ba34cb7c4b7513cc25"
+      },
+      {
+        "relativePath": ".next/server/app/membership/page_client-reference-manifest.js",
+        "sizeBytes": 6145,
+        "sha256": "3c1f0952be82db6d57375bec5c1013401a3c038bd9a050a6f057be25f5dd9f25"
+      },
+      {
+        "relativePath": ".next/server/app/offline/page.js",
+        "sizeBytes": 851,
+        "sha256": "4f3937742b5d2f5dea4b90e7670541c4a1c04dd9c2b4e2a956115a094c0095fc"
+      },
+      {
+        "relativePath": ".next/server/app/offline/page_client-reference-manifest.js",
+        "sizeBytes": 5975,
+        "sha256": "9decb823e3ad971744c48a5a1a79fc36be7b731f46daba2f534b357504dc4fd7"
+      },
+      {
+        "relativePath": ".next/server/app/page.js",
+        "sizeBytes": 832,
+        "sha256": "6cd8da3a391ac46d25d43def3f8344a147fa2928b5cb6b5463b3653680a2ab5d"
+      },
+      {
+        "relativePath": ".next/server/app/page_client-reference-manifest.js",
+        "sizeBytes": 6035,
+        "sha256": "f1003d9caf84615f916b160c47c9194015359f833d9a4f6b142af8c417cc17de"
+      },
+      {
+        "relativePath": ".next/server/app/robots.txt/route.js",
+        "sizeBytes": 327,
+        "sha256": "a5729bead67b0cca25e595799c1201882275d633e920e009ad3a30b1330b9285"
+      },
+      {
+        "relativePath": ".next/server/app/robots.txt/route_client-reference-manifest.js",
+        "sizeBytes": 296,
+        "sha256": "665dd8682e80287400d0cb8f9457f902ca0768972b1c23af4060e37baa34b8b9"
+      },
+      {
+        "relativePath": ".next/server/app/services/page.js",
+        "sizeBytes": 895,
+        "sha256": "143e467d2783f47c3a4b4c37050d89df04f2bf54a13695441539c40b7374c555"
+      },
+      {
+        "relativePath": ".next/server/app/services/page_client-reference-manifest.js",
+        "sizeBytes": 6130,
+        "sha256": "b2476c36a6c13b77bcb9d95afabcf6e53e11f4fe803483e8130214f7384c0ccb"
+      },
+      {
+        "relativePath": ".next/server/app/services/[slug]/page.js",
+        "sizeBytes": 870,
+        "sha256": "1b1f12819f657dc9b731970e55cd4bb09459dec996c1744acedb85e2dd13afbd"
+      },
+      {
+        "relativePath": ".next/server/app/services/[slug]/page_client-reference-manifest.js",
+        "sizeBytes": 6232,
+        "sha256": "51e0f146e1e3d27c3c51919c62b1ee00d34e02f660d7f94df054ea189d04efcd"
+      },
+      {
+        "relativePath": ".next/server/app/sitemap.xml/route.js",
+        "sizeBytes": 364,
+        "sha256": "f647dc3c23c42a43e4c1a3d9874d664f4f98fce1903e6ebbc99d49d469216849"
+      },
+      {
+        "relativePath": ".next/server/app/sitemap.xml/route_client-reference-manifest.js",
+        "sizeBytes": 297,
+        "sha256": "a3f93d7afb269db2be00de86f626c787d934fabeb30a1d88f55d7c6695ed03ed"
+      },
+      {
+        "relativePath": ".next/server/app/status/page.js",
+        "sizeBytes": 849,
+        "sha256": "7400093fd76b2af9d6c4bad55258a0eb6b1775d310b1952cc22a50bfd932557f"
+      },
+      {
+        "relativePath": ".next/server/app/status/page_client-reference-manifest.js",
+        "sizeBytes": 6050,
+        "sha256": "27d193acf44c3ff5c3cca995f37470ec953861a12b2d7e5535c94f7bc8348bd3"
+      },
+      {
+        "relativePath": ".next/server/app/vault/page.js",
+        "sizeBytes": 845,
+        "sha256": "aaaeeebe486bba637df9028a88117fb1831147a8444ebdb2fece2b949acd1549"
+      },
+      {
+        "relativePath": ".next/server/app/vault/page_client-reference-manifest.js",
+        "sizeBytes": 6092,
+        "sha256": "0037fbe0f84a4d6f5c248975be5ab19031912993fd13de80a860f2c5db59600f"
+      },
+      {
+        "relativePath": ".next/server/app/_global-error/page.js",
+        "sizeBytes": 531,
+        "sha256": "66a1e2a25558e7c1764a3a146120ae87685af94b0d8dde714b57890a132532b3"
+      },
+      {
+        "relativePath": ".next/server/app/_global-error/page_client-reference-manifest.js",
+        "sizeBytes": 3605,
+        "sha256": "ff912755950db9a077a168921b27a3faec33b88d81b9a6405a8b4c9f635de86f"
+      },
+      {
+        "relativePath": ".next/server/app/_not-found/page.js",
+        "sizeBytes": 794,
+        "sha256": "b9c5246a3f8a9fa2d1e016719c2d82868509c8d3fb313c2c34998c9594db4657"
+      },
+      {
+        "relativePath": ".next/server/app/_not-found/page_client-reference-manifest.js",
+        "sizeBytes": 5276,
+        "sha256": "45331f0a0ece1d374875d1e57d1c160ce61586b1cc9859e94d553483ecc059cf"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/node_modules_1nkgb45._.js",
+        "sizeBytes": 123580,
+        "sha256": "94756192ab50fc18b090cc88490334fc44ff450713748cf5c0d1453d7adbb0e4"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/node_modules_next_19t8bgk._.js",
+        "sizeBytes": 53406,
+        "sha256": "153d732d1ccd48deb28e5ce0814ef1358aa4c8703c64f0951661bea4dd352ce1"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/node_modules_next_dist_1bunoni._.js",
+        "sizeBytes": 52665,
+        "sha256": "ee6d3df91c922ff334f9c74c5f9285437ecf7e2595267c32c3b2d4a40e9b382f"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/node_modules_next_dist_1n3w9lb._.js",
+        "sizeBytes": 25003,
+        "sha256": "f3ab9d04cebe3b56312e999eb446b3647b9e4a918961e6f6d9cf626bdffe9e3e"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/node_modules_next_dist_client_components_0p8s4lh._.js",
+        "sizeBytes": 2531,
+        "sha256": "f0f7da6ff7ff11d5b8186d703607612923b70c65535506b8827e681b28e3267a"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/node_modules_next_dist_client_components_builtin_unauthorized_0l_sp0x.js",
+        "sizeBytes": 672,
+        "sha256": "31c82886e206a4ddfb028d86b19b036491c30eca465089fc6284754717f29f3a"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/src_08vck7u._.js",
+        "sizeBytes": 27499,
+        "sha256": "4e3f9b309c55fccd40dc4ad4835182b274e70355fe91ec543cbc0f8e0682570d"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/src_0op_hu8._.js",
+        "sizeBytes": 23245,
+        "sha256": "fb180a116bfb82e697e8f052f92e85408936ba430a491388a2888bfb4da229db"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/src_18na9vm._.js",
+        "sizeBytes": 16198,
+        "sha256": "beacd81304ee828c358a3cffc164e34a5a4db24faa47fba45dd5c304489c1cef"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/src_1bo4yw0._.js",
+        "sizeBytes": 17535,
+        "sha256": "686be80c4c0afbc2c135f2b1e5c5fc94a110a51889f99e9554323ca4d7cee654"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/src_app_assessment_page_tsx_09qlhu6._.js",
+        "sizeBytes": 23024,
+        "sha256": "dc99aaed555db1a5a9d22562317e3546c7a39cbe2e1abe89662c821e41b6ba0e"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/src_app_error_tsx_0ac07bj._.js",
+        "sizeBytes": 4419,
+        "sha256": "0b2492f71f0b1848e8c4f370e0e0b27b713833ce3cc6d871af3e28bab33dd5cc"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/src_app_error_tsx_1gs2ol2._.js",
+        "sizeBytes": 568,
+        "sha256": "bf3a526e5f0f5ce9fea095463feceed43f44e18fbdc895379683b4c8367df609"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/src_app_global-error_tsx_009xrx8._.js",
+        "sizeBytes": 591,
+        "sha256": "752f4d08804ea502f760eef73997a96f829b2adec033395f5796d53c81577c4b"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/src_app_global-error_tsx_0w4-lfw._.js",
+        "sizeBytes": 3633,
+        "sha256": "91da64cbb53b6bdbec060e9f6aa68ae2178855da473fb51292531d5ba49e53d8"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/src_app_governance_page_tsx_1j3rv79._.js",
+        "sizeBytes": 21771,
+        "sha256": "3ce8ee8fb4d8509b38f991caba47007d3459067b113cb2aafde02a449947b8ef"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/src_app_ledger_page_tsx_0zk4e8q._.js",
+        "sizeBytes": 48723,
+        "sha256": "e91e8838efdddcf14b8db73cc10f113170c419a6c9b9035b9adbbe9e599acdf7"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/src_app_login_page_tsx_0yrgg2z._.js",
+        "sizeBytes": 8529,
+        "sha256": "5c89070f472a9b39857d6b5d9aaed3ec9129d4e021e928333c86a37fab04170a"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/src_app_membership_page_tsx_0qslfuy._.js",
+        "sizeBytes": 20796,
+        "sha256": "dc875e7461381ca795348b9ab77a062e7f0e9fe88fb750ad547a2875e2675f4c"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/src_app_offline_page_tsx_0zzjx24._.js",
+        "sizeBytes": 4979,
+        "sha256": "2d69c830a400e256bf6113d23b8d07e9a929e0f7e73698952744166101f3fdbe"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/src_app_page_tsx_1chiuah._.js",
+        "sizeBytes": 21093,
+        "sha256": "4e0b1c75fa6a43c5fb87cc3e81c579f3ead6ac3116eff66786ccefd7415753fa"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/src_app_services_[slug]_page_tsx_11y157r._.js",
+        "sizeBytes": 29014,
+        "sha256": "ee15f84a10bbbc8084d8e60091370729203c28280f7b2bb59562a82349af9efa"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/src_app_vault_page_tsx_0riwaol._.js",
+        "sizeBytes": 22512,
+        "sha256": "b250c921331d4995203c89ad239d14dd2a0f04d08b886cfa2a5538c3c9c1b1ab"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/src_components_15lbvyf._.js",
+        "sizeBytes": 21406,
+        "sha256": "0a3e852c17e1529efc8b3c47289911b33604aa99b15e0909a0ea8ff9739fa395"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/src_components_Footer_tsx_1_nfut1._.js",
+        "sizeBytes": 6762,
+        "sha256": "97c4a278589967d2e36816b3030c72f366de0065d60e85176f836613b6d92ff6"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/src_components_marketing_BookingModal_tsx_0h5f-b1._.js",
+        "sizeBytes": 5008,
+        "sha256": "bf20677014be0bfa73b2e0b2ba053237ddd3cf4d077c16a61dab370d3d270c0f"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/src_components_visualizations_ModalityVisualizations_tsx_0jg-b7f._.js",
+        "sizeBytes": 28482,
+        "sha256": "b1acff431ef5b8cafbb8d65baa85c6d75e824d9a2b338621e80e4b0875ca7bb1"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/[root-of-the-server]__05_4kh6._.js",
+        "sizeBytes": 1856,
+        "sha256": "65a27ba29b1dddf11f5563f0e740d54bf5d77db11946b9c996237a7635dbd493"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/[root-of-the-server]__07wuw3k._.js",
+        "sizeBytes": 4153,
+        "sha256": "2481237aa2a1e91e2847fd8a821b2d5a3002d27d44b3fd1f8597c4857496fc50"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/[root-of-the-server]__08gvobq._.js",
+        "sizeBytes": 3661,
+        "sha256": "cd4a84893886ff40951bd4297a5b37b4250d03be0fbdf359f8bfcf71dfc0cbb3"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/[root-of-the-server]__0b0p4oy._.js",
+        "sizeBytes": 4191,
+        "sha256": "3d9761734d376a369f3918e8a8d0b1ac7964f443a1c6ff875b6a005018024878"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/[root-of-the-server]__0j26pto._.js",
+        "sizeBytes": 217285,
+        "sha256": "8f71cf9320773996ed4dbee30aaebcec5e502879c2966cf34933f82acebb814f"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/[root-of-the-server]__0jx1q6r._.js",
+        "sizeBytes": 4245,
+        "sha256": "4bc6f07c41bcd4d1e02eded0412dfbf0d52dbf82044da8f2d69832758e300c41"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/[root-of-the-server]__0mxgm_3._.js",
+        "sizeBytes": 4165,
+        "sha256": "9933496cb32297f5534ae90564a21deb8f3f0f4076d8a5c4ceec966df66feddf"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/[root-of-the-server]__0o-_xye._.js",
+        "sizeBytes": 4153,
+        "sha256": "a6cfe140145107047ac84261e5355a9f880090b11129d492ca69d1f68e497fe0"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/[root-of-the-server]__0wm3plj._.js",
+        "sizeBytes": 8114,
+        "sha256": "d54feb112874a61ad6ac5ef1c5dde09175d899d59ff2f70d2d3b2cbd88240647"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/[root-of-the-server]__0_x-2xf._.js",
+        "sizeBytes": 3056,
+        "sha256": "c09f25f39b10d0c17e68391b806342d0f0e0df629ad4cdc441aa6769e50996f7"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/[root-of-the-server]__19-c5pm._.js",
+        "sizeBytes": 4185,
+        "sha256": "2ee6f8cfad6ec992314e22eaf1582f68512fed18328dbd7ef469127d785137bf"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/[root-of-the-server]__19b7qfv._.js",
+        "sizeBytes": 4159,
+        "sha256": "750f7a1619964e19fb624ce3d86f1f6809002bcf4f75c1ec474684b974026de7"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/[root-of-the-server]__1hwz2m-._.js",
+        "sizeBytes": 5408,
+        "sha256": "d9407a29e035a8753828187e30dea31bca186efca662288f65d454aea8acd2b0"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/[root-of-the-server]__1mz2w8i._.js",
+        "sizeBytes": 4185,
+        "sha256": "81dedbdc9c39a8517db03bf89e480e6a0987b3df98a54700869f197b73b96773"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/[root-of-the-server]__1nucsh1._.js",
+        "sizeBytes": 4185,
+        "sha256": "9c7f289b275d7e47d2b1a46aa8d55a364e3359d5f0c1af904e201cad973a7169"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/[root-of-the-server]__1sqgian._.js",
+        "sizeBytes": 4174,
+        "sha256": "f8429ea6e6e98af33d1d5ee56c21805686f213e2741ea65b7d73fb51f20c1425"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/[root-of-the-server]__1vq2xcl._.js",
+        "sizeBytes": 4161,
+        "sha256": "846f7f39cc833ee9d1cb0695189cda80fce968ce14a4dd8fc126141a0669c996"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/[root-of-the-server]__1w38r-r._.js",
+        "sizeBytes": 7538,
+        "sha256": "ce5aef57620956620c8a3dc965c19bea481ec8251f141c7f644bac1356849ae7"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/[root-of-the-server]__1w_uzc8._.js",
+        "sizeBytes": 4179,
+        "sha256": "01eda06fee796dfb16c632c9c4a8da841101f4f79ed0a8765fbde1c2f5c2091c"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/[root-of-the-server]__1_asi82._.js",
+        "sizeBytes": 4088,
+        "sha256": "b1288e25af0ca9040f6bde26308cf95622383221a1bca0fe600566c285510bc4"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/[turbopack]_runtime.js",
+        "sizeBytes": 36634,
+        "sha256": "56571fe2688b4bcf40b6cd465434c83b88b4ac30af46704f9f251cd564860839"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/_0qptkf4._.js",
+        "sizeBytes": 5639,
+        "sha256": "1072e7618e26430008142bf713c78a606e9770f94f08165fe5cfa13f5e191de6"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/_next-internal_server_app_assessment_page_actions_0lo-gbp.js",
+        "sizeBytes": 122,
+        "sha256": "7aef431ff547ae02031ffb3997dd860a2a0d2689b904333f669554057bdc78ae"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/_next-internal_server_app_biographies_page_actions_0n0wg0_.js",
+        "sizeBytes": 123,
+        "sha256": "3c89b047dc3612e4170b1c8ba757dac4ae6cf0ccd8b5b35bc6df446934c3e8da"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/_next-internal_server_app_briefings_page_actions_0dn1l6u.js",
+        "sizeBytes": 121,
+        "sha256": "0d13c2e9d31641e603d81fcb579f70f5965558deca55c18e2c72e63e23375ddb"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/_next-internal_server_app_governance_page_actions_1x7y4yc.js",
+        "sizeBytes": 122,
+        "sha256": "dca1736cf3f83999c376c069c1025c8c732001dadfd9c4524dd60e65efedfc69"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/_next-internal_server_app_ledger_page_actions_0q2777x.js",
+        "sizeBytes": 118,
+        "sha256": "51d8c9ba605b4d23c164628d5754b9847177a665119b9eba6941757a0546bfdb"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/_next-internal_server_app_login_page_actions_04fnjo0.js",
+        "sizeBytes": 117,
+        "sha256": "81d5547f961475796c741d87318e7043095a11186506a8e8b8fe84babd8c42c2"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/_next-internal_server_app_membership_page_actions_1jh55bj.js",
+        "sizeBytes": 122,
+        "sha256": "7760d965406b30705f4c56144886a8b759d65e408f31e1f51e6a5854893278f3"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/_next-internal_server_app_offline_page_actions_0xm3s3w.js",
+        "sizeBytes": 119,
+        "sha256": "93520015ce1f7618deb299294567ec3ee9f90e768000c7e669d677f8c91a8bc4"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/_next-internal_server_app_page_actions_0hhsz1j.js",
+        "sizeBytes": 111,
+        "sha256": "76f655a65309e9ac85bfa9199f012d77aad022a32973f49ab855a3c87e5fd6e9"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/_next-internal_server_app_services_page_actions_18c-f7f.js",
+        "sizeBytes": 120,
+        "sha256": "7ba73fbdd84663e10a241fecb9fca75c920e2d40675a4ab530eb5d3ecff449fd"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/_next-internal_server_app_services_[slug]_page_actions_1hnzk5f.js",
+        "sizeBytes": 131,
+        "sha256": "e35a2e5b8dc834c25ef237e13c143d16bf0b3ee753ca7a967a97059d5e81d8d5"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/_next-internal_server_app_status_page_actions_0hgo4cy.js",
+        "sizeBytes": 118,
+        "sha256": "4a5ac5d52a61ad0eb15983647ac613ed0a3c468f7cf13bcc09567974538e1aaa"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/_next-internal_server_app_vault_page_actions_0pgw800.js",
+        "sizeBytes": 117,
+        "sha256": "d7eccfd792e777e7f5325260759c7b539cb59f90489c244398e83ee692b059e8"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/_next-internal_server_app__global-error_page_actions_0zi5s8-.js",
+        "sizeBytes": 125,
+        "sha256": "c898e6139d76ae88f36ae1daa7cd2950dfd0eccaff3bea76692d9f4655d76914"
+      },
+      {
+        "relativePath": ".next/server/chunks/ssr/_next-internal_server_app__not-found_page_actions_0pt47yr.js",
+        "sizeBytes": 122,
+        "sha256": "174b05d9df2550c3ea4fe731a2750d7e0e93465ab60d2fac0cc47f127c0de36b"
+      },
+      {
+        "relativePath": ".next/server/chunks/[externals]__1mn3361._.js",
+        "sizeBytes": 1426,
+        "sha256": "1799f944ee8ed47305eefb58a13a27cf17c6b731c4da075147e91383a9d506d1"
+      },
+      {
+        "relativePath": ".next/server/chunks/[root-of-the-server]__0l3yhx4._.js",
+        "sizeBytes": 173708,
+        "sha256": "27f1356b960838041bfa1d288c9277ed7269735791d55c48bd00678e22254ab3"
+      },
+      {
+        "relativePath": ".next/server/chunks/[root-of-the-server]__0v76vta._.js",
+        "sizeBytes": 10006,
+        "sha256": "1e0018a71f04e3e18a5dc67203c0bc597330e6b1f020170708f254d0575e09d8"
+      },
+      {
+        "relativePath": ".next/server/chunks/[root-of-the-server]__138oaj3._.js",
+        "sizeBytes": 8463,
+        "sha256": "d7511f1ab7a3bae05e21c1fc206dc5b587fc5b26c7fdf52d3ef810c56f379ce5"
+      },
+      {
+        "relativePath": ".next/server/chunks/[root-of-the-server]__1j-1n2g._.js",
+        "sizeBytes": 12622,
+        "sha256": "c08eec8c3b9255114ee59d842c6618a9e3d276e949b79f7e5a8cc90a9db6d004"
+      },
+      {
+        "relativePath": ".next/server/chunks/[root-of-the-server]__1uvlqxe._.js",
+        "sizeBytes": 5533,
+        "sha256": "a45b4b43d9a268025449bad3a2838e7717b6de4c777b3fb9f2b2bdd99c2b06d9"
+      },
+      {
+        "relativePath": ".next/server/chunks/[turbopack]_runtime.js",
+        "sizeBytes": 36624,
+        "sha256": "4edd2b962c9675984942c07b0536edfc9babb00bf86f0b769a3ca493392cebf4"
+      },
+      {
+        "relativePath": ".next/server/chunks/_0muyrbf._.js",
+        "sizeBytes": 26775,
+        "sha256": "460b92128c2629020e8a3210239025b12ea3fd757f11ce6ccd8f9753fa59d60b"
+      },
+      {
+        "relativePath": ".next/server/chunks/_0uxp3uh._.js",
+        "sizeBytes": 41457,
+        "sha256": "4ce671e0c752f9bc3ff8c91125cafdcd002e804e325949dfe5916af9d011b330"
+      },
+      {
+        "relativePath": ".next/server/chunks/_next-internal_server_app_api_health_route_actions_1ryftkb.js",
+        "sizeBytes": 122,
+        "sha256": "f67cd839fb372d7df7bdbf4e4f9e9766cfa7aca10a573110a0c56915bebb23ee"
+      },
+      {
+        "relativePath": ".next/server/chunks/_next-internal_server_app_api_webhooks_calcom_route_actions_1zjcxd1.js",
+        "sizeBytes": 132,
+        "sha256": "95e43d3cc6c99201e714900fdaad7dd0aedebf7b324607a8952418cfd2ef8750"
+      },
+      {
+        "relativePath": ".next/server/chunks/_next-internal_server_app_favicon_ico_route_actions_0g2jjls.js",
+        "sizeBytes": 124,
+        "sha256": "264fdb71697e0cc778789187725eea00ab2a06d04f8d467f12616cf1d1ac2fa7"
+      },
+      {
+        "relativePath": ".next/server/chunks/_next-internal_server_app_robots_txt_route_actions_15vc_89.js",
+        "sizeBytes": 123,
+        "sha256": "e5165e0f85122fb0975658bc4caae8fd86411618523fb2f462f523ab95825355"
+      },
+      {
+        "relativePath": ".next/server/chunks/_next-internal_server_app_sitemap_xml_route_actions_05l5km9.js",
+        "sizeBytes": 124,
+        "sha256": "c13d7739241b1572df04a712e8688105eb6f7bbb4faf9f3a63c80388af19ddbc"
+      },
+      {
+        "relativePath": ".next/server/edge/chunks/node_modules_next_dist_esm_0t6suhr._.js",
+        "sizeBytes": 1842,
+        "sha256": "0192bcd0c1d8a622a2a75c0ef296ce6b0408a29751279c41cfc451ac2551a7d1"
+      },
+      {
+        "relativePath": ".next/server/edge/chunks/turbopack-node_modules_next_dist_esm_build_templates_edge-wrapper_1sqqhes.js",
+        "sizeBytes": 9882,
+        "sha256": "6fc4679eca0fb1e82594f1a1c323e0cd49c0fec4ba29ed03d8f268aaee788db7"
+      },
+      {
+        "relativePath": ".next/server/edge/chunks/[root-of-the-server]__0167nzz._.js",
+        "sizeBytes": 405398,
+        "sha256": "2c56412a9982354e310cd1d4a91db1d97a2bbdf37bf443a4c279354990bd7525"
+      },
+      {
+        "relativePath": ".next/server/edge/chunks/[root-of-the-server]__0o13qka._.js",
+        "sizeBytes": 299458,
+        "sha256": "2f1720ba5777ab6b591d433331d98f6fa2d35d9a9335ca9a648c1d95726225f6"
+      },
+      {
+        "relativePath": ".next/server/edge/chunks/_next-internal_server_app_api_og_route_actions_0dygxci.js",
+        "sizeBytes": 227,
+        "sha256": "1c5e956f21a21cd59def66a105dddf80279942e9d351a679af51e12a4d1c49b7"
+      },
+      {
+        "relativePath": ".next/server/interception-route-rewrite-manifest.js",
+        "sizeBytes": 48,
+        "sha256": "fc5133e40acf09e6517b073ddd7b5c0c218d09938848902210f2cc13f08e1c81"
+      },
+      {
+        "relativePath": ".next/server/middleware-build-manifest.js",
+        "sizeBytes": 639,
+        "sha256": "4aba6c2d997e6d5d33f8fa2f695f5cc2a9f93a8679f39da739f10feea04f5e21"
+      },
+      {
+        "relativePath": ".next/server/next-font-manifest.js",
+        "sizeBytes": 3622,
+        "sha256": "b9f70099e696b48442abc32e183ae184e0c303b4ecf617e6ce3a8e69399d420c"
+      },
+      {
+        "relativePath": ".next/server/server-reference-manifest.js",
+        "sizeBytes": 138,
+        "sha256": "8dfc03eb3d5bf44df39d6929b181b1a367dacf3b468b3d34d0405ee2afa2a6e0"
+      }
+    ]
+  }
+}

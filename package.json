@@ -17,11 +17,13 @@
     "test:live": "ts-node --project tsconfig.json scripts/verify-live-edge.ts",
     "verify:dns": "ts-node --project tsconfig.json scripts/verify-dns.ts",
     "audit:perf": "ts-node --project tsconfig.json scripts/audit-performance.ts",
+    "audit:deps": "ts-node --project tsconfig.json scripts/audit-dependencies.ts",
+    "audit:lighthouse": "ts-node --project tsconfig.json scripts/audit-lighthouse.ts",
     "drill:failover": "ts-node --project tsconfig.json scripts/drill-failover.ts"
   },
   "dependencies": {
     "@calcom/embed-react": "^1.5.3",
-    "next": "16.2.10",
+    "next": "^16.3.4",
     "react": "19.2.4",
     "react-dom": "19.2.4"
   },
@@ -33,7 +35,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.2.10",
+    "eslint-config-next": "^16.3.4",
     "jest": "^30.5.1",
     "tailwindcss": "^4",
     "ts-jest": "^29.4.12",

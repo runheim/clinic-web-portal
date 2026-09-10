@@ -250,4 +250,71 @@ test.describe("Cognitive Edge Clinic — Full-Platform Verification & Zero-ePHI 
     await expect(eCwAnchor).toHaveAttribute("target", "_blank");
     await expect(eCwAnchor).toHaveAttribute("rel", "noopener noreferrer");
   });
+
+  // SCENARIO 7: Phase 16 — Command-K Palette, Schema.org Knowledge Graph & PWA Offline Sanctuary
+  test("Scenario 7: Phase 16 - Command-K Search, Schema.org JSON-LD, PWA Manifest, and Offline Sanctuary", async ({
+    page,
+  }) => {
+    // 1. Verify Command-K Search Palette on Homepage
+    await page.goto("/");
+
+    // Click TopNavBar search trigger button
+    const searchTrigger = page.locator('button[aria-label*="Search"]');
+    await expect(searchTrigger).toBeVisible();
+    await searchTrigger.click();
+
+    // Verify search modal dialog is visible
+    const searchDialog = page.locator('div[role="dialog"][aria-label="Clinical Command Search Palette"]');
+    await expect(searchDialog).toBeVisible();
+
+    // Type query "TMS" and verify filtered results
+    const searchInput = searchDialog.locator('input[role="combobox"]');
+    await expect(searchInput).toBeVisible();
+    await searchInput.fill("TMS");
+
+    // Expect TMS result
+    await expect(page.getByText("High-Frequency DLPFC TMS Neuromodulation")).toBeVisible();
+
+    // Press Escape to close modal
+    await page.keyboard.press("Escape");
+    await expect(searchDialog).not.toBeVisible();
+
+    // Test Keyboard shortcut: press Meta+k / Control+k to open
+    await page.keyboard.press("Control+k");
+    await expect(searchDialog).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(searchDialog).not.toBeVisible();
+
+    // 2. Verify Schema.org JSON-LD Structured Data
+    const schemaScript = page.locator('script[type="application/ld+json"]');
+    await expect(schemaScript).toBeAttached();
+    const schemaContent = await schemaScript.textContent();
+    expect(schemaContent).not.toBeNull();
+    const schemaJson = JSON.parse(schemaContent!);
+    expect(schemaJson["@context"]).toBe("https://schema.org");
+    expect(schemaJson["@graph"]).toBeDefined();
+    expect(Array.isArray(schemaJson["@graph"])).toBe(true);
+
+    const graphTypes = schemaJson["@graph"].map((g: { "@type": string | string[] }) =>
+      Array.isArray(g["@type"]) ? g["@type"].join(",") : g["@type"]
+    );
+    expect(graphTypes.some((t: string) => t.includes("MedicalBusiness"))).toBe(true);
+    expect(graphTypes.some((t: string) => t.includes("Physician"))).toBe(true);
+    expect(graphTypes.some((t: string) => t.includes("MedicalWebPage"))).toBe(true);
+
+    // 3. Verify Offline Sanctuary Route (/offline)
+    const offlineRes = await page.goto("/offline");
+    expect(offlineRes?.status()).toBe(200);
+    await expect(page.getByRole("heading", { name: "Clinical Connection Suspended" })).toBeVisible();
+    await expect(page.locator('a[href="sms:+18005550199"]')).toBeVisible();
+    await expect(page.locator('a[href="tel:+18005550199"]')).toBeVisible();
+
+    // 4. Verify PWA Web App Manifest (/manifest.json)
+    const manifestRes = await page.goto("/manifest.json");
+    expect(manifestRes?.status()).toBe(200);
+    const manifestJson = await manifestRes?.json();
+    expect(manifestJson.name).toContain("Cognitive Edge Clinic");
+    expect(manifestJson.display).toBe("standalone");
+    expect(manifestJson.icons.length).toBeGreaterThanOrEqual(2);
+  });
 });
