@@ -8,7 +8,13 @@ export async function POST(req: NextRequest) {
     const secret = process.env.CALCOM_WEBHOOK_SECRET;
 
     // HMAC Signature Verification (if secret is configured in environment)
-    if (secret && signature) {
+    if (secret) {
+      if (!signature) {
+        return NextResponse.json(
+          { error: "Missing HMAC signature header" },
+          { status: 401 }
+        );
+      }
       const hmac = crypto.createHmac("sha256", secret);
       const digest = hmac.update(rawBody).digest("hex");
       if (signature !== digest) {

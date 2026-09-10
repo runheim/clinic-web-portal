@@ -10,7 +10,8 @@
     "test:unit": "jest",
     "test:e2e": "playwright test",
     "audit:release": "ts-node --project tsconfig.json scripts/audit-release.ts",
-    "package:release": "ts-node --project tsconfig.json scripts/package-release.ts"
+    "package:release": "ts-node --project tsconfig.json scripts/package-release.ts",
+    "test:smoke": "ts-node --project tsconfig.json scripts/smoke-test.ts"
   },
   "dependencies": {
     "@calcom/embed-react": "^1.5.3",
