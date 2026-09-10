@@ -1,83 +1,53 @@
-/**
- * Netlify Edge Function: Legal Jurisdiction & Telehealth Compliance Router
- * 
- * Inspects incoming request geolocation metadata (ISO 3166-1 country code and
- * ISO 3166-2 subdivision code) and injects strict legal jurisdiction & telehealth
- * eligibility headers into the edge response.
- * 
- * Injected Headers:
- * - x-clinic-jurisdiction: NC_CLINICAL | US_EDUCATIONAL | GLOBAL_ADVISORY
- * - x-clinic-telehealth-eligible: 1 | 0
- */
-
-import {
-  resolveJurisdiction,
-  HEADER_JURISDICTION,
-  HEADER_TELEHEALTH_ELIGIBLE,
-} from '../../../src/lib/compliance/jurisdictionPolicy';
+export const HEADER_JURISDICTION = 'x-clinic-jurisdiction';
+export const HEADER_TELEHEALTH_ELIGIBLE = 'x-clinic-telehealth-eligible';
 
 export interface EdgeContext {
-  next: (options?: { sendConditional?: boolean }) => Promise<Response>;
   geo?: {
     city?: string;
-    country?: {
-      code?: string;
-      name?: string;
-    };
-    subdivision?: {
-      code?: string;
-      name?: string;
-    };
-    timezone?: string;
-    latitude?: number;
-    longitude?: number;
+    country?: { code?: string; name?: string };
+    subdivision?: { code?: string; name?: string };
   };
-  ip?: string;
-  params?: Record<string, string>;
-  requestId?: string;
-  site?: {
-    id?: string;
-    name?: string;
-    url?: string;
-  };
-  [key: string]: unknown;
+  next?: () => Promise<Response>;
 }
 
-export type Context = EdgeContext;
+function resolveEdgeTier(countryCode?: string, subdivisionCode?: string) {
+  const country = countryCode?.trim().toUpperCase();
+  let sub = subdivisionCode?.trim().toUpperCase();
+  if (sub && sub.startsWith('US-')) {
+    sub = sub.slice(3);
+  }
 
-export const config = {
-  path: '/*',
-};
+  if (!country || (country !== 'US' && country !== 'USA')) {
+    return { tier: 'GLOBAL_ADVISORY', eligible: '0' };
+  }
+  if (sub === 'NC') {
+    return { tier: 'NC_CLINICAL', eligible: '1' };
+  }
+  return { tier: 'US_EDUCATIONAL', eligible: '0' };
+}
 
-export default async function handler(
-  request: Request,
-  context: EdgeContext
-): Promise<Response> {
-  const response =
-    context && typeof context.next === 'function'
-      ? await context.next()
-      : new Response(null, { status: 200 });
+export default async function edgeHandler(request: Request, context?: EdgeContext): Promise<Response> {
+  const { tier, eligible } = resolveEdgeTier(
+    context?.geo?.country?.code,
+    context?.geo?.subdivision?.code
+  );
 
-  const countryCode = context?.geo?.country?.code;
-  const subdivisionCode = context?.geo?.subdivision?.code;
-
-  const profile = resolveJurisdiction(countryCode, subdivisionCode);
-
-  const headersToSet: [string, string][] = [
-    [HEADER_JURISDICTION, profile.jurisdiction],
-    [HEADER_TELEHEALTH_ELIGIBLE, profile.telehealthEligible ? '1' : '0'],
-  ];
+  let response: Response;
+  if (context && typeof context.next === 'function') {
+    response = await context.next();
+  } else {
+    response = new Response(null, { status: 200 });
+  }
 
   try {
-    for (const [key, value] of headersToSet) {
-      response.headers.set(key, value);
-    }
+    response.headers.set(HEADER_JURISDICTION, tier);
+    response.headers.set(HEADER_TELEHEALTH_ELIGIBLE, eligible);
     return response;
   } catch {
+    // Handle immutable response headers via fallback cloning
     const newHeaders = new Headers(response.headers);
-    for (const [key, value] of headersToSet) {
-      newHeaders.set(key, value);
-    }
+    newHeaders.set(HEADER_JURISDICTION, tier);
+    newHeaders.set(HEADER_TELEHEALTH_ELIGIBLE, eligible);
     return new Response(response.body, {
       status: response.status,
       statusText: response.statusText,
