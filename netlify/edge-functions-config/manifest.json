@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "functions": [
+    {
+      "function": "cache-control",
+      "name": "cache-control",
+      "path": "/*",
+      "pattern": "^/.*$"
+    }
+  ],
+  "routes": [
+    {
+      "function": "cache-control",
+      "path": "/*",
+      "pattern": "^/.*$"
+    }
+  ]
+}
