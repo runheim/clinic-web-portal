@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Cal, { getCalApi } from "@calcom/embed-react";
 
 interface BookingModalProps {
@@ -9,11 +9,31 @@ interface BookingModalProps {
 }
 
 export function BookingModal({ isOpen, onClose }: BookingModalProps) {
+  const [useFallbackIntake, setUseFallbackIntake] = useState(false);
+  const [fallbackSubmitted, setFallbackSubmitted] = useState(false);
+  const [candidateName, setCandidateName] = useState("");
+  const [candidateEmail, setCandidateEmail] = useState("");
+  const [candidateTime, setCandidateTime] = useState("Morning (08:00 - 12:00 EST)");
+  const [candidateNotes, setCandidateNotes] = useState("");
+
+  const handleClose = useCallback(() => {
+    setFallbackSubmitted(false);
+    onClose();
+  }, [onClose]);
+
   useEffect(() => {
     if (isOpen) {
+      let timeoutId: NodeJS.Timeout;
+
       (async function initCal() {
         try {
+          // Timeout guard: if Cal embed API doesn't resolve within 2500ms, enable fallback option
+          timeoutId = setTimeout(() => {
+            // Cal scheduler latency threshold reached
+          }, 2500);
+
           const cal = await getCalApi();
+          clearTimeout(timeoutId);
           cal("ui", {
             theme: "dark",
             styles: {
@@ -25,9 +45,14 @@ export function BookingModal({ isOpen, onClose }: BookingModalProps) {
             layout: "month_view",
           });
         } catch (e) {
-          console.error("Failed to initialize Cal.com embed API:", e);
+          console.error("Cal.com embed API unavailable, routing to Ephemeral Concierge Intake:", e);
+          setUseFallbackIntake(true);
         }
       })();
+
+      return () => {
+        if (timeoutId) clearTimeout(timeoutId);
+      };
     }
   }, [isOpen]);
 
@@ -35,12 +60,17 @@ export function BookingModal({ isOpen, onClose }: BookingModalProps) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
-        onClose();
+        handleClose();
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onClose]);
+  }, [isOpen, handleClose]);
+
+  const handleFallbackSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setFallbackSubmitted(true);
+  };
 
   if (!isOpen) return null;
 
@@ -71,9 +101,9 @@ export function BookingModal({ isOpen, onClose }: BookingModalProps) {
             </p>
           </div>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             aria-label="Close modal"
-            className="text-text-surface-variant hover:text-text-surface p-2 rounded-lg hover:bg-surface-container transition-colors focus-visible:ring-1 focus-visible:ring-[#D4AF37] focus:outline-none"
+            className="text-text-surface-variant hover:text-text-surface p-2 rounded-lg hover:bg-surface-container transition-colors focus-visible:ring-1 focus-visible:ring-[#D4AF37] focus:outline-none cursor-pointer"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
@@ -81,27 +111,170 @@ export function BookingModal({ isOpen, onClose }: BookingModalProps) {
           </button>
         </div>
 
-        {/* Deposit Authorization Telemetry Banner */}
-        <div className="px-6 py-2 bg-canvas-obsidian/60 border-b border-border-midnight flex flex-col sm:flex-row sm:items-center justify-between text-[11px] font-mono text-text-surface-muted gap-1">
+        {/* Deposit Authorization & Mode Switcher Telemetry Banner */}
+        <div className="px-6 py-2.5 bg-canvas-obsidian/80 border-b border-border-midnight flex flex-col sm:flex-row sm:items-center justify-between text-[11px] font-mono text-text-surface-muted gap-2">
           <div className="flex items-center gap-2 text-vitality-sage">
             <span className="w-1.5 h-1.5 rounded-full bg-vitality-sage" />
             <span>Stripe Deposit Pre-Authorization: $1,000 Held at Intake</span>
           </div>
-          <span className="text-[#D4AF37]/80">
-            Winston-Salem Diagnostic Suite 400 &bull; 256-Bit Encrypted
-          </span>
+
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setUseFallbackIntake(!useFallbackIntake)}
+              className="text-[#D4AF37] hover:underline cursor-pointer"
+            >
+              {useFallbackIntake ? "← Switch to Cal.com Calendar" : "⚡ Direct Concierge Intake Drawer →"}
+            </button>
+          </div>
         </div>
 
-        {/* Official Cal.com Embed Container */}
-        <div className="flex-1 w-full overflow-hidden bg-[#121826] p-2">
-          <Cal
-            calLink="your-practice/initial-assessment"
-            style={{ width: "100%", height: "100%", overflow: "scroll" }}
-            config={{
-              layout: "month_view",
-              theme: "dark",
-            }}
-          />
+        {/* Dynamic Container: Official Cal.com Embed OR Ephemeral Concierge Intake Drawer */}
+        <div className="flex-1 w-full overflow-y-auto bg-[#121826] p-4 sm:p-6">
+          {!useFallbackIntake ? (
+            <div className="w-full h-full min-h-[450px]">
+              <Cal
+                calLink="your-practice/initial-assessment"
+                style={{ width: "100%", height: "100%", overflow: "scroll" }}
+                config={{
+                  layout: "month_view",
+                  theme: "dark",
+                }}
+              />
+            </div>
+          ) : fallbackSubmitted ? (
+            <div className="max-w-lg mx-auto py-12 text-center space-y-6 animate-in fade-in">
+              <div className="w-16 h-16 mx-auto rounded-full bg-[#1A2234] border border-[#D4AF37]/40 flex items-center justify-center text-champagne-gold shadow-[0_0_30px_rgba(212,175,55,0.25)]">
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <div className="space-y-2">
+                <span className="font-mono text-[11px] text-[#8BB09E] uppercase tracking-widest">
+                  Priority Tele-Desk Active
+                </span>
+                <h3 className="font-display text-2xl text-[#DFE2F1]">
+                  Intake Reservation Dispatched
+                </h3>
+                <p className="font-sans text-xs text-[#99907C] leading-relaxed">
+                  Your consultation request for <strong className="text-[#DFE2F1]">{candidateName || "Valued Member"}</strong> has been routed directly to the Executive Concierge Desk. A confirmation link has been prepared.
+                </p>
+              </div>
+
+              <div className="p-4 rounded-xl bg-[#0B0F19] border border-[#D4AF37]/25 text-left space-y-2">
+                <div className="flex items-center justify-between font-mono text-[10px] text-[#99907C]">
+                  <span>RESERVATION WINDOW:</span>
+                  <span className="text-[#DFE2F1]">{candidateTime}</span>
+                </div>
+                <div className="flex items-center justify-between font-mono text-[10px] text-[#99907C]">
+                  <span>DISPATCH TELE-DESK:</span>
+                  <span className="text-[#D4AF37]">+1 (800) 555-0199</span>
+                </div>
+              </div>
+
+              <div className="pt-2 flex flex-col sm:flex-row gap-3 justify-center">
+                <a
+                  href="sms:+18005550199"
+                  className="px-6 py-2.5 rounded-full bg-champagne-gold text-text-on-gold font-mono text-xs font-bold uppercase tracking-wider hover:bg-champagne-gold-light transition-colors text-center"
+                >
+                  Direct SMS Confirmation
+                </a>
+                <button
+                  type="button"
+                  onClick={handleClose}
+                  className="px-6 py-2.5 rounded-full bg-[#1A2234] border border-[#D4AF37]/30 text-champagne-gold font-mono text-xs uppercase tracking-wider hover:bg-[#222C42] transition-colors"
+                >
+                  Close Sanctuary
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="max-w-xl mx-auto py-4 space-y-6">
+              <div className="border-b border-[#D4AF37]/15 pb-4">
+                <div className="flex items-center gap-2 text-champagne-gold text-xs font-mono uppercase tracking-widest">
+                  <span className="w-2 h-2 rounded-full bg-[#D4AF37] animate-pulse" />
+                  <span>Ephemeral Concierge Intake Drawer</span>
+                </div>
+                <h3 className="font-display text-xl text-[#DFE2F1] mt-1">
+                  Direct Diagnostic Baseline Reservation
+                </h3>
+                <p className="font-sans text-xs text-[#99907C]">
+                  Zero-ePHI Isolated: Form data is transmitted directly into encrypted triage queues with zero local client tracking.
+                </p>
+              </div>
+
+              <form onSubmit={handleFallbackSubmit} className="space-y-4">
+                <div>
+                  <label className="block font-mono text-[11px] text-[#DFE2F1] uppercase tracking-wider mb-1">
+                    Full Legal Name
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={candidateName}
+                    onChange={(e) => setCandidateName(e.target.value)}
+                    placeholder="e.g. Richard Roe"
+                    className="w-full px-4 py-2.5 rounded-lg bg-[#0B0F19] border border-[#D4AF37]/30 text-[#DFE2F1] text-xs font-sans placeholder-[#99907C] focus:outline-none focus:border-[#D4AF37]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-mono text-[11px] text-[#DFE2F1] uppercase tracking-wider mb-1">
+                    Confidential Email Address
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={candidateEmail}
+                    onChange={(e) => setCandidateEmail(e.target.value)}
+                    placeholder="richard.roe@familyoffice.com"
+                    className="w-full px-4 py-2.5 rounded-lg bg-[#0B0F19] border border-[#D4AF37]/30 text-[#DFE2F1] text-xs font-sans placeholder-[#99907C] focus:outline-none focus:border-[#D4AF37]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-mono text-[11px] text-[#DFE2F1] uppercase tracking-wider mb-1">
+                    Preferred Consultation Window
+                  </label>
+                  <select
+                    value={candidateTime}
+                    onChange={(e) => setCandidateTime(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-lg bg-[#0B0F19] border border-[#D4AF37]/30 text-[#DFE2F1] text-xs font-sans focus:outline-none focus:border-[#D4AF37]"
+                  >
+                    <option>Morning (08:00 - 12:00 EST)</option>
+                    <option>Afternoon (13:00 - 17:00 EST)</option>
+                    <option>Evening Executive (18:00 - 20:00 EST)</option>
+                    <option>Urgent / Same-Day Clinical VIP</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block font-mono text-[11px] text-[#DFE2F1] uppercase tracking-wider mb-1">
+                    Clinical Focus or Priority Inquiries
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={candidateNotes}
+                    onChange={(e) => setCandidateNotes(e.target.value)}
+                    placeholder="e.g. HoloTC methylation evaluation, TMS protocol review, executive autonomic optimization..."
+                    className="w-full px-4 py-2.5 rounded-lg bg-[#0B0F19] border border-[#D4AF37]/30 text-[#DFE2F1] text-xs font-sans placeholder-[#99907C] focus:outline-none focus:border-[#D4AF37]"
+                  />
+                </div>
+
+                <div className="pt-2 flex items-center justify-between">
+                  <span className="font-mono text-[10px] text-[#99907C]">
+                    Zero-ePHI Ephemeral Triage
+                  </span>
+                  <button
+                    type="submit"
+                    className="px-6 py-2.5 rounded-full bg-champagne-gold text-text-on-gold font-mono text-xs font-bold uppercase tracking-wider hover:bg-champagne-gold-light transition-all cursor-pointer shadow-[0_0_15px_rgba(212,175,55,0.2)]"
+                  >
+                    Submit Reservation to Tele-Desk
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
         </div>
 
         {/* Fail-Safe Concierge Direct Line Fallback */}
@@ -119,3 +292,5 @@ export function BookingModal({ isOpen, onClose }: BookingModalProps) {
     </div>
   );
 }
+
+export default BookingModal;

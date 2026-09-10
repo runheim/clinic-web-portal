@@ -19,6 +19,7 @@
     "audit:perf": "ts-node --project tsconfig.json scripts/audit-performance.ts",
     "audit:deps": "ts-node --project tsconfig.json scripts/audit-dependencies.ts",
     "audit:lighthouse": "ts-node --project tsconfig.json scripts/audit-lighthouse.ts",
+    "rotate:keys": "ts-node --project tsconfig.json scripts/rotate-keys.ts",
     "drill:failover": "ts-node --project tsconfig.json scripts/drill-failover.ts"
   },
   "dependencies": {

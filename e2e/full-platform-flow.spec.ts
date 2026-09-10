@@ -317,4 +317,43 @@ test.describe("Cognitive Edge Clinic — Full-Platform Verification & Zero-ePHI 
     expect(manifestJson.display).toBe("standalone");
     expect(manifestJson.icons.length).toBeGreaterThanOrEqual(2);
   });
+
+  // SCENARIO 8: Phase 18 — Maintenance Sanctuary & Ephemeral Concierge Intake Drawer Fail-Safe
+  test("Scenario 8: Phase 18 - Maintenance Sanctuary & Ephemeral Intake Drawer Failover", async ({
+    page,
+  }) => {
+    // 1. Verify Maintenance Sanctuary (/maintenance)
+    const maintRes = await page.goto("/maintenance");
+    expect(maintRes?.status()).toBe(200);
+    await expect(page.getByRole("heading", { name: "Clinical Sanctuary Temporarily Reserved" })).toBeVisible();
+    await expect(page.locator('a[href="sms:+18005550199"]')).toBeVisible();
+    await expect(page.locator('a[href="tel:+18005550199"]')).toBeVisible();
+
+    // 2. Verify Ephemeral Concierge Intake Drawer in BookingModal
+    await page.goto("/membership");
+    const vipInquireBtn = page.getByRole("button", { name: /Inquire for Concierge VIP Access/i });
+    await vipInquireBtn.click();
+
+    const drawerSwitchBtn = page.getByRole("button", { name: /Direct Concierge Intake Drawer/i });
+    await expect(drawerSwitchBtn).toBeVisible();
+    await drawerSwitchBtn.click();
+
+    // Verify Ephemeral Intake Form fields
+    await expect(page.getByText("Ephemeral Concierge Intake Drawer")).toBeVisible();
+    const nameInput = page.locator('input[placeholder="e.g. Richard Roe"]');
+    const emailInput = page.locator('input[placeholder="richard.roe@familyoffice.com"]');
+    await expect(nameInput).toBeVisible();
+    await expect(emailInput).toBeVisible();
+
+    // Fill form and submit
+    await nameInput.fill("Winston Sterling");
+    await emailInput.fill("sterling@private-enclave.com");
+    const submitBtn = page.getByRole("button", { name: /Submit Reservation to Tele-Desk/i });
+    await submitBtn.click();
+
+    // Verify confirmed dispatch card
+    await expect(page.getByText("Priority Tele-Desk Active")).toBeVisible();
+    await expect(page.getByText("Intake Reservation Dispatched")).toBeVisible();
+    await expect(page.getByText("Winston Sterling")).toBeVisible();
+  });
 });

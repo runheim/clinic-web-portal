@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
+import { executeWithCircuitBreaker, getSpruceFallbackResponse } from "@/lib/circuitBreaker";
 
 export async function POST(req: NextRequest) {
   try {
@@ -73,22 +74,46 @@ export async function POST(req: NextRequest) {
     };
 
     if (spruceApiKey) {
-      const spruceResponse = await fetch(
-        "https://api.sprucehealth.com/v1/contacts",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${spruceApiKey}`,
-          },
-          body: JSON.stringify(spruceContactPayload),
+      const breakerResult = await executeWithCircuitBreaker(
+        "spruce",
+        async () => {
+          const spruceResponse = await fetch(
+            "https://api.sprucehealth.com/v1/contacts",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${spruceApiKey}`,
+              },
+              body: JSON.stringify(spruceContactPayload),
+            }
+          );
+
+          if (!spruceResponse.ok) {
+            const err = new Error(`Spruce API responded with HTTP ${spruceResponse.status}`);
+            (err as unknown as { statusText?: string }).statusText = spruceResponse.statusText || "Bad Gateway";
+            throw err;
+          }
+
+          return await spruceResponse.json().catch(() => ({
+            statusText: spruceResponse.statusText,
+          }));
+        },
+        async (err) => {
+          const fallback = getSpruceFallbackResponse({
+            name: primaryAttendee.name,
+            email: primaryAttendee.email,
+          });
+          const statusText = (err as unknown as { statusText?: string })?.statusText || "Bad Gateway";
+          return {
+            ...fallback,
+            statusText,
+          };
         }
       );
 
-      spruceStatus = spruceResponse.ok ? "provisioned" : "failed";
-      spruceResponseData = await spruceResponse.json().catch(() => ({
-        statusText: spruceResponse.statusText,
-      }));
+      spruceStatus = breakerResult.fromFallback ? "failed" : "provisioned";
+      spruceResponseData = breakerResult.data as Record<string, unknown>;
     }
 
     return NextResponse.json({
