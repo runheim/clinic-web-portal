@@ -357,6 +357,79 @@ test.describe("Cognitive Edge Clinic — VIP Portal & Full Site E2E Verification
     await vipToggleBtn.click();
     await expect(page.getByRole("heading", { name: "Concierge VIP Retainer Active" })).toBeVisible();
   });
+
+  // TEST 9: Bespoke Luxury Mobile Navigation Drawer & Responsive Breakpoint Split
+  test("Test 9: Mobile Navigation Drawer - Responsive breakpoint, animated toggle, drawer categories, and WCAG accessibility", async ({
+    page,
+  }) => {
+    // 1. Set mobile viewport (< 1280px)
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/");
+
+    // 2. Verify desktop navigation links are hidden on mobile
+    const desktopNav = page.locator("header .hidden.xl\\:flex");
+    await expect(desktopNav).toBeHidden();
+
+    // 3. Verify mobile bar elements
+    const brandLogo = page.getByRole("link", { name: "Cognitive Edge Home" });
+    await expect(brandLogo).toBeVisible();
+
+    const searchTrigger = page.locator('button[aria-label="Quick search clinical modalities, biomarkers, briefings, and actions (Cmd+K)"]');
+    await expect(searchTrigger).toBeVisible();
+
+    const menuToggle = page.locator('button[aria-controls="mobile-menu"]');
+    await expect(menuToggle).toBeVisible();
+    await expect(menuToggle).toHaveAttribute("aria-expanded", "false");
+
+    // 4. Test Quick Search Trigger
+    await searchTrigger.click();
+    const searchDialog = page.locator('div[role="dialog"][aria-label="Clinical Command Search Palette"]');
+    await expect(searchDialog).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(searchDialog).not.toBeVisible();
+
+    // 5. Open Luxury Mobile Drawer
+    await menuToggle.click();
+    await expect(menuToggle).toHaveAttribute("aria-expanded", "true");
+
+    const drawer = page.locator("#mobile-menu");
+    await expect(drawer).toBeVisible();
+    await expect(page.locator("body")).toHaveClass(/overflow-hidden/);
+
+    // 6. Verify Category 1: Clinical Modalities & Science
+    await expect(drawer.getByText("Clinical Modalities & Science")).toBeVisible();
+    await expect(drawer.getByRole("link", { name: "Services" })).toBeVisible();
+    await expect(drawer.getByRole("link", { name: "The Ledger" })).toBeVisible();
+    await expect(drawer.getByRole("link", { name: "Briefings" })).toBeVisible();
+    await expect(drawer.getByRole("link", { name: "Membership" })).toBeVisible();
+    await expect(drawer.getByRole("link", { name: "Biographies" })).toBeVisible();
+
+    // 7. Verify Category 2: Member Enclaves
+    await expect(drawer.getByText("Member Enclaves")).toBeVisible();
+    await expect(drawer.getByRole("link", { name: /Diagnostic Vault/i })).toBeVisible();
+    await expect(drawer.getByRole("link", { name: "Client Portal" })).toBeVisible();
+    await expect(drawer.getByRole("link", { name: "Member Login" })).toBeVisible();
+
+    // 8. Verify Category 3: Primary Action & Concierge Triage
+    await expect(drawer.getByRole("link", { name: "Initiate Assessment →" })).toBeVisible();
+    const conciergeLink = drawer.getByRole("link", { name: /Clinical Concierge: \+1 \(800\) 555-0199/i });
+    await expect(conciergeLink).toBeVisible();
+    await expect(conciergeLink).toHaveAttribute("href", "tel:+18005550199");
+
+    // 9. Verify WCAG Escape key closes drawer and removes overflow-hidden
+    await page.keyboard.press("Escape");
+    await expect(menuToggle).toHaveAttribute("aria-expanded", "false");
+    await expect(drawer).not.toBeVisible();
+    await expect(page.locator("body")).not.toHaveClass(/overflow-hidden/);
+
+    // 10. Verify navigation closes drawer
+    await menuToggle.click();
+    await expect(drawer).toBeVisible();
+    await drawer.getByRole("link", { name: "The Ledger" }).click();
+    await page.waitForURL("**/ledger", { timeout: 5000 });
+    await expect(drawer).not.toBeVisible();
+    await expect(page.locator("body")).not.toHaveClass(/overflow-hidden/);
+  });
 });
 
 
