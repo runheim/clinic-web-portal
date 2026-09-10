@@ -1,26 +1,56 @@
 @import "tailwindcss";
 
+@theme {
+  /* Obsidian Palette (Backgrounds & Canvas) */
+  --color-canvas-obsidian: #0b0f19;
+  --color-surface-midnight: #121826;
+  --color-surface-container: #1c1f2a;
+  --color-surface-container-highest: #313540;
+
+  /* Brand Accent & Gold Semantics */
+  --color-champagne-gold: #d4af37;
+  --color-champagne-gold-light: #f2ca50;
+  --color-champagne-gold-brand: #e9c349;
+  --color-text-on-gold: #3c2f00;
+  --color-vitality-sage: #4e6b5e;
+
+  /* Text & Surface Contrast */
+  --color-text-surface: #dfe2f1;
+  --color-text-surface-variant: #d0c5af;
+  --color-text-surface-muted: #99907c;
+
+  /* Typography Font Families */
+  --font-display: var(--font-eb-garamond), Georgia, serif;
+  --font-body: var(--font-hanken-grotesk), system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), monospace;
+
+  /* Border Tokens */
+  --color-border-gold-subtle: rgba(212, 175, 55, 0.20);
+  --color-border-gold-accent: rgba(212, 175, 55, 0.30);
+  --color-border-midnight: #1c1f2a;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --background: #0b0f19;
+  --foreground: #dfe2f1;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: #0b0f19;
+  color: #dfe2f1;
+  font-family: var(--font-body);
+  overflow-x: hidden;
+}
+
+/* Custom Utilities for Figma Aesthetics */
+.glass-panel {
+  background: rgba(18, 24, 38, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(212, 175, 55, 0.15);
+}
+
+.font-label-caps {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
 }
