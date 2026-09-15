@@ -14,7 +14,7 @@ const BYPASS_PREFIXES = [
   "/api/health",
 ];
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Check bypass list

@@ -1,7 +1,7 @@
 import React from "react";
 import { renderToString } from "react-dom/server";
 import { NextRequest } from "next/server";
-import { middleware, config } from "@/middleware";
+import { proxy as middleware, config } from "@/proxy";
 import MaintenancePage from "@/app/maintenance/page";
 
 describe("Subagent Beta: Sanctuary Gateway & Maintenance Suite", () => {
