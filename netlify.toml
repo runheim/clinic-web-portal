@@ -13,7 +13,7 @@
   force = true
   headers = { Referrer-Policy = "no-referrer" }
 
-# Static Edge Security Headers (Duplicating Next.js Edge Config for Guaranteed Delivery)
+# Static Edge Security Headers
 [[headers]]
   for = "/*"
   [headers.values]

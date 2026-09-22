@@ -60,3 +60,33 @@ echo -e "{\n  \"status\": \"COMPILED\",\n  \"sha256\": \"$BUILD_CHECKSUM\",\n  \
 echo -e "${SAGE}================================================================================"
 echo -e "   BUILD COMPLETE AND VERIFIED (Release: $BUILD_CHECKSUM)"
 echo -e "================================================================================${NC}"
+
+# WSL DrvFs Patch for Netlify Next.js Plugin (Prevents NTFS EACCES on directory rename)
+node -e '
+const fs = require("fs");
+const targets = [
+  ".netlify/plugins/node_modules/@netlify/plugin-nextjs/dist/build/content/static.js",
+  ".netlify/functions-internal/___netlify-server-handler/.netlify/dist/build/content/static.js",
+  "node_modules/@netlify/plugin-nextjs/dist/build/content/static.js"
+];
+targets.forEach(p => {
+  if (!fs.existsSync(p)) return;
+  let c = fs.readFileSync(p, "utf8");
+  if (!c.includes("safeMoveDir")) {
+    const helper = `var safeMoveDir = async (s, d) => {
+      const { rename, cp, rm } = await import("node:fs/promises");
+      try { await rename(s, d); } catch (err) {
+        if (err && ["EACCES","EXDEV","EPERM"].includes(err.code)) {
+          await cp(s, d, { recursive: true });
+          await rm(s, { recursive: true, force: true });
+        } else { throw err; }
+      }
+    };\n`;
+    c = helper + c;
+    c = c.replace(/await rename\(ctx\.publishDir,\s*ctx\.tempPublishDir\);/g, "await safeMoveDir(ctx.publishDir, ctx.tempPublishDir);");
+    c = c.replace(/await rename\(ctx\.staticDir,\s*ctx\.publishDir\);/g, "await safeMoveDir(ctx.staticDir, ctx.publishDir);");
+    c = c.replace(/await rename\(ctx\.tempPublishDir,\s*ctx\.publishDir\);/g, "await safeMoveDir(ctx.tempPublishDir, ctx.publishDir);");
+    fs.writeFileSync(p, c);
+  }
+});
+'
