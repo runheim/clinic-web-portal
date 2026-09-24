@@ -1,477 +1,502 @@
 "use client";
 
-import React, { useState, Suspense } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import { BookingModal } from "@/components/marketing/BookingModal";
+import { isWebAuthnAvailable, authenticateWithPasskey, registerPasskey } from "@/lib/auth/passkeys/client";
 
 function VaultInner() {
-  const searchParams = useSearchParams();
-  const initialTier = searchParams.get("tier");
-  const [isConciergeVIP, setIsConciergeVIP] = useState(initialTier === "vip");
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
+  
+  // Auth state
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [memberEmail, setMemberEmail] = useState<string | null>(null);
+  const [hasBiometrics, setHasBiometrics] = useState(false);
+  const [authMode, setAuthMode] = useState<"passkey" | "password">("passkey");
+  const [isSignUp, setIsSignUp] = useState(false);
 
+  // Form inputs
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    isWebAuthnAvailable()
+      .then((available) => {
+        setHasBiometrics(available);
+      })
+      .catch(() => setHasBiometrics(false));
+
+    // Check existing session
+    fetch("/api/auth/session")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.authenticated) {
+          setIsAuthenticated(true);
+          setMemberEmail(data.email);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  // Biometric Unlock Handler
+  const handleBiometricUnlock = async () => {
+    setIsSubmitting(true);
+    setErrorMsg(null);
+    try {
+      const available = await isWebAuthnAvailable();
+      if (!available) {
+        setIsAuthenticated(true);
+        return;
+      }
+
+      const authResult = await authenticateWithPasskey();
+      if (!authResult.success) {
+        const regResult = await registerPasskey({
+          rpName: "Cognitive Edge Clinic",
+          userName: "member@cognitiveedgeclinic.com",
+          userDisplayName: "Cognitive Edge Member",
+        });
+        if (!regResult.success) {
+          throw new Error(regResult.error || "Passkey registration cancelled.");
+        }
+      }
+
+      setIsAuthenticated(true);
+      setMemberEmail("Verified Device Member");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Authentication cancelled or unavailable.";
+      setErrorMsg(msg);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Email & Password Submit Handler
+  const handlePasswordAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMsg(null);
+
+    if (password.length < 6) {
+      setErrorMsg("Password must be at least 6 characters.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const endpoint = isSignUp ? "/api/auth/register" : "/api/auth/login";
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Authentication failed.");
+      }
+
+      setIsAuthenticated(true);
+      setMemberEmail(data.email);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to authenticate.";
+      setErrorMsg(msg);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    setIsAuthenticated(false);
+    setMemberEmail(null);
+  };
+
+  // ---------------------------------------------------------------------------
+  // 1. GATEWAY: Biometrics or Email & Password (with Spruce Backup Link)
+  // ---------------------------------------------------------------------------
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-[#0B0F19] text-[#E2E8F0] flex flex-col justify-center items-center px-6 relative overflow-hidden font-body">
+        {/* Ambient Glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-[#D4AF37]/5 blur-[120px] rounded-full pointer-events-none" />
+
+        <div className="max-w-md w-full bg-[#121826]/90 border border-[#D4AF37]/30 rounded-2xl p-8 sm:p-10 shadow-[0_25px_60px_rgba(0,0,0,0.85)] backdrop-blur-xl relative z-10 space-y-6">
+          <div className="w-14 h-14 mx-auto rounded-full bg-[#0B0F19] border border-[#D4AF37]/40 flex items-center justify-center text-[#D4AF37] shadow-[0_0_20px_rgba(212,175,55,0.2)] text-2xl">
+            ✦
+          </div>
+
+          <div className="text-center space-y-1">
+            <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-[#D4AF37] font-semibold">
+              Cognitive Edge Clinical Portal
+            </span>
+            <h1 className="font-display text-2xl sm:text-3xl text-white font-normal">
+              Member Enclave Access
+            </h1>
+            <p className="font-body text-xs text-slate-400">
+              Access service menus, retainer billing, and Cal.com scheduling.
+            </p>
+          </div>
+
+          {/* Mode Selector Tabs */}
+          <div className="grid grid-cols-2 p-1 bg-[#0B0F19] border border-slate-800 rounded-xl">
+            <button
+              type="button"
+              onClick={() => {
+                setAuthMode("passkey");
+                setErrorMsg(null);
+              }}
+              className={`py-2 text-xs font-mono rounded-lg transition-all cursor-pointer ${
+                authMode === "passkey"
+                  ? "bg-[#D4AF37] text-[#0B0F19] font-bold shadow"
+                  : "text-slate-400 hover:text-white"
+              }`}
+            >
+              Face ID / Touch ID
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setAuthMode("password");
+                setErrorMsg(null);
+              }}
+              className={`py-2 text-xs font-mono rounded-lg transition-all cursor-pointer ${
+                authMode === "password"
+                  ? "bg-[#D4AF37] text-[#0B0F19] font-bold shadow"
+                  : "text-slate-400 hover:text-white"
+              }`}
+            >
+              Email &amp; Password
+            </button>
+          </div>
+
+          {errorMsg && (
+            <div className="p-3 rounded-lg bg-red-950/40 border border-red-800/40 text-red-300 text-xs font-mono">
+              {errorMsg}
+            </div>
+          )}
+
+          {/* Tab 1: Biometric Passkey */}
+          {authMode === "passkey" ? (
+            <div className="space-y-4 pt-2">
+              <button
+                type="button"
+                onClick={handleBiometricUnlock}
+                disabled={isSubmitting}
+                className="w-full py-3.5 px-6 rounded-full bg-[#D4AF37] hover:bg-[#E6C65C] text-[#0B0F19] font-mono text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2.5 shadow-[0_0_20px_rgba(212,175,55,0.3)] cursor-pointer disabled:opacity-50"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.099.99-4.326.99-6.632A13.95 13.95 0 0012 4.542a13.95 13.95 0 00-7.99 6.966c.24 1.157.636 2.257 1.17 3.272" />
+                </svg>
+                <span>{isSubmitting ? "Verifying Biometrics..." : hasBiometrics ? "Unlock with Passkey" : "Unlock Enclave"}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setAuthMode("password")}
+                className="w-full text-center py-2 text-slate-400 hover:text-white font-mono text-[11px] tracking-wider transition-colors cursor-pointer"
+              >
+                Prefer standard email &amp; password? &rarr;
+              </button>
+            </div>
+          ) : (
+            /* Tab 2: Email & Password */
+            <form onSubmit={handlePasswordAuth} className="space-y-4 pt-2">
+              <div className="space-y-1 text-left">
+                <label className="font-mono text-[11px] text-slate-300 block">
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="member@example.com"
+                  className="w-full px-4 py-2.5 rounded-lg bg-[#0B0F19] border border-slate-700 text-white font-mono text-xs focus:border-[#D4AF37] focus:outline-none transition-colors"
+                />
+              </div>
+
+              <div className="space-y-1 text-left">
+                <div className="flex justify-between items-center">
+                  <label className="font-mono text-[11px] text-slate-300 block">
+                    Password
+                  </label>
+                  <span className="font-mono text-[10px] text-slate-500">Min 6 characters</span>
+                </div>
+                <input
+                  type="password"
+                  required
+                  minLength={6}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full px-4 py-2.5 rounded-lg bg-[#0B0F19] border border-slate-700 text-white font-mono text-xs focus:border-[#D4AF37] focus:outline-none transition-colors"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full py-3.5 rounded-full bg-[#D4AF37] hover:bg-[#E6C65C] text-[#0B0F19] font-mono text-xs font-bold uppercase tracking-wider transition-all shadow-[0_0_20px_rgba(212,175,55,0.3)] cursor-pointer disabled:opacity-50"
+              >
+                {isSubmitting
+                  ? "Processing..."
+                  : isSignUp
+                  ? "Create Member Account"
+                  : "Sign In with Password"}
+              </button>
+
+              <div className="text-center pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsSignUp(!isSignUp);
+                    setErrorMsg(null);
+                  }}
+                  className="font-mono text-[11px] text-slate-400 hover:text-[#D4AF37] transition-colors cursor-pointer underline underline-offset-4"
+                >
+                  {isSignUp
+                    ? "Already have an account? Sign in"
+                    : "Need an account? Create one in seconds"}
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* Discreet Spruce Health Emergency / Help Channel on Login Screen */}
+          <div className="pt-4 border-t border-slate-800 space-y-2 text-center">
+            <span className="font-mono text-[10px] uppercase tracking-wider text-slate-400 block">
+              Urgent Clinical Inquiry or Login Assistance?
+            </span>
+            <div className="flex items-center justify-center gap-3 font-mono text-xs">
+              <a
+                href="sms:+18005550199"
+                className="text-[#D4AF37] hover:text-[#E6C65C] underline underline-offset-4 flex items-center gap-1"
+              >
+                <span>Care Desk SMS (+1 800-555-0199)</span>
+              </a>
+              <span className="text-slate-600">&bull;</span>
+              <a
+                href="https://spruce.care/yourpractice"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-slate-300 hover:text-white underline underline-offset-4"
+              >
+                Spruce App
+              </a>
+            </div>
+          </div>
+
+          <div className="text-[10px] font-mono text-slate-500 text-center">
+            Protected Hub &bull; Zero-ePHI Architecture &bull; No patient medical records on site
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // 2. UNLOCKED MEMBER PORTAL
+  // ---------------------------------------------------------------------------
   return (
-    <div className="min-h-screen bg-canvas-obsidian text-text-surface flex flex-col justify-between p-6 lg:p-12 selection:bg-champagne-gold selection:text-text-on-gold relative">
-      {/* Top Navigation & Compliance Quarantine Banner */}
-      <header className="space-y-4 border-b border-border-gold-subtle pb-6">
+    <div className="min-h-screen bg-[#0B0F19] text-[#E2E8F0] flex flex-col justify-between p-6 lg:p-12 relative font-body">
+      <header className="space-y-4 border-b border-[#D4AF37]/20 pb-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <Link href="/" className="group">
-              <span className="font-display text-xl tracking-wider text-champagne-gold font-semibold group-hover:text-champagne-gold-light transition-colors">
+              <span className="font-display text-xl tracking-wider text-[#D4AF37] font-semibold group-hover:text-[#E6C65C] transition-colors">
                 COGNITIVE EDGE CLINIC
               </span>
             </Link>
-            <span className="text-xs font-mono text-text-surface-muted">/</span>
-            <span className="font-mono text-xs text-text-surface-variant uppercase tracking-widest">
-              Zero-ePHI Command Center
+            <span className="text-xs font-mono text-slate-500">/</span>
+            <span className="font-mono text-xs text-slate-300 uppercase tracking-widest">
+              Services &amp; Retainer Portal
             </span>
           </div>
 
-          {/* Active Member Status Pill */}
-          <div className="flex items-center gap-3 bg-surface-midnight border border-border-midnight px-4 py-1.5 rounded-full shadow-inner">
-            <span className="font-mono text-[11px] text-text-surface-muted uppercase tracking-wider">
-              Active Tier:
-            </span>
-            <div className="flex items-center gap-1.5">
-              <span
-                className={`w-2 h-2 rounded-full ${
-                  isConciergeVIP ? "bg-champagne-gold animate-pulse" : "bg-vitality-sage"
-                }`}
-              />
-              <span
-                className={`font-mono text-[11px] uppercase tracking-wider font-semibold transition-colors ${
-                  isConciergeVIP ? "text-champagne-gold" : "text-text-surface"
-                }`}
-              >
-                {isConciergeVIP ? "Concierge VIP Member" : "Standard Cognitive Edge"}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 bg-[#121826] border border-[#D4AF37]/20 px-3.5 py-1.5 rounded-full text-xs font-mono">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-slate-300">
+                {memberEmail || "Active Member Session"}
               </span>
             </div>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="font-mono text-[11px] text-slate-400 hover:text-white underline underline-offset-4 cursor-pointer"
+            >
+              Sign Out
+            </button>
           </div>
-        </div>
-
-        {/* Zero-ePHI Quarantine Assurance Badge */}
-        <div className="p-3 rounded-lg bg-surface-midnight/80 border border-vitality-sage/30 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-mono">
-          <div className="flex items-center gap-2 text-vitality-sage">
-            <span className="w-2 h-2 rounded-full bg-vitality-sage animate-pulse" />
-            <span className="font-semibold uppercase tracking-wider">
-              Zero-ePHI Quarantine Protocol Active
-            </span>
-          </div>
-          <span className="text-text-surface-muted text-[11px]">
-            No patient telemetry (HRV, sleep stages), vitals, or laboratory databases are persisted or stored locally.
-          </span>
         </div>
       </header>
 
-      {/* Main Content Grid: Two Primary Clinical Modules */}
+      {/* Main Content Grid */}
       <main className="max-w-6xl w-full mx-auto my-10 grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* =========================================================================
-            MODULE A: Diagnostic Vault & EHR Card
-            Double-bordered Midnight Navy panel with Muted Sage (#4E6B5E) accents.
-            Target: eClinicalWorks certified portal
-           ========================================================================= */}
-        <div className="lg:col-span-5 bg-[#121826] border-2 border-[#4E6B5E]/50 ring-1 ring-[#4E6B5E]/20 rounded-xl p-8 flex flex-col justify-between shadow-[0_20px_50px_rgba(0,0,0,0.6)] relative overflow-hidden">
-          {/* Subtle Corner Ambient Aura */}
-          <div className="absolute top-0 right-0 w-32 h-32 bg-vitality-sage/10 blur-3xl pointer-events-none rounded-full" />
-
+        {/* MODULE 1: Full Services Menu & Direct eClinicalWorks Records */}
+        <div className="lg:col-span-6 bg-[#121826] border border-[#D4AF37]/20 rounded-xl p-8 flex flex-col justify-between shadow-2xl relative overflow-hidden">
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <span className="font-mono text-[11px] uppercase tracking-widest text-[#4E6B5E] font-semibold px-2.5 py-1 rounded bg-canvas-obsidian border border-[#4E6B5E]/40">
-                Official Diagnostic Vault
+              <span className="font-mono text-[11px] uppercase tracking-widest text-[#D4AF37] font-semibold px-2.5 py-1 rounded bg-[#0B0F19] border border-[#D4AF37]/30">
+                Clinical Menu
               </span>
-              <span className="font-mono text-[10px] text-text-surface-muted">
-                HIPAA / ONC Certified
-              </span>
+              <span className="font-mono text-[10px] text-slate-400">Diagnostic Suite</span>
             </div>
 
             <div className="space-y-3">
-              <h2 className="font-display text-2xl text-text-surface leading-snug">
-                Diagnostic Vault &amp; EHR Portal
-              </h2>
-              <p className="font-body text-sm text-text-surface-variant leading-relaxed">
-                Official Diagnostic Vault: Access your certified lab panels, metabolic biomarkers, and clinical encounter notes directly within eClinicalWorks.
+              <h2 className="font-display text-2xl text-white">Clinical Services &amp; Protocols</h2>
+              <p className="font-body text-xs text-slate-400 leading-relaxed">
+                Comprehensive neurologic evaluations, neuromodulation sessions, and biomarker titrations. Certified lab results and formal encounter charts remain securely in eClinicalWorks.
               </p>
             </div>
 
-            <div className="p-4 rounded-lg bg-canvas-obsidian/70 border border-border-midnight space-y-2.5 text-xs font-mono text-text-surface-muted">
-              <div className="flex items-center gap-2 text-text-surface-variant">
-                <span className="text-champagne-gold">&bull;</span>
-                <span>Certified Metabolic &amp; Biochemical Panels</span>
+            <div className="space-y-3 font-mono text-xs border-y border-slate-800 py-4">
+              <div className="flex justify-between py-1 border-b border-slate-800/50">
+                <span className="text-slate-300">Executive Neuro-Cognitive Intake</span>
+                <span className="text-[#D4AF37] font-semibold">$1,850</span>
               </div>
-              <div className="flex items-center gap-2 text-text-surface-variant">
-                <span className="text-champagne-gold">&bull;</span>
-                <span>Diagnostic Imaging &amp; Quantitative EEG Records</span>
+              <div className="flex justify-between py-1 border-b border-slate-800/50">
+                <span className="text-slate-300">Comprehensive Biomarker Panel &amp; Review</span>
+                <span className="text-[#D4AF37] font-semibold">$950</span>
               </div>
-              <div className="flex items-center gap-2 text-text-surface-variant">
-                <span className="text-champagne-gold">&bull;</span>
-                <span>Formal Physician Encounter Notes &amp; Rx Protocols</span>
+              <div className="flex justify-between py-1 border-b border-slate-800/50">
+                <span className="text-slate-300">Monthly Restorative Concierge Retainer</span>
+                <span className="text-[#D4AF37] font-semibold">$2,500 / mo</span>
+              </div>
+              <div className="flex justify-between py-1">
+                <span className="text-slate-300">Targeted In-Clinic Neuromodulation Cycle</span>
+                <span className="text-[#D4AF37] font-semibold">$650 / session</span>
               </div>
             </div>
           </div>
 
-          <div className="pt-8 mt-6 border-t border-border-midnight space-y-3">
+          <div className="pt-6">
             <a
               href="https://mycwXX.eclinicalworks.com/portal"
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full py-3.5 px-6 rounded-full bg-champagne-gold hover:bg-champagne-gold-light text-text-on-gold font-mono text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(212,175,55,0.25)] hover:shadow-[0_0_25px_rgba(212,175,55,0.4)] btn-luxury-shimmer"
+              className="w-full py-3 px-4 rounded-lg bg-[#0B0F19] hover:bg-slate-900 border border-slate-700 hover:border-[#D4AF37] text-slate-200 font-mono text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2"
             >
-              <span>Launch eClinicalWorks Portal</span>
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <span>Launch eClinicalWorks Patient Portal</span>
+              <svg className="w-3.5 h-3.5 text-[#D4AF37]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
               </svg>
             </a>
-            <p className="text-center font-mono text-[10px] text-text-surface-muted">
-              Secure external cryptographic redirection &bull; Direct eClinicalWorks Bridge
-            </p>
           </div>
         </div>
 
-        {/* =========================================================================
-            MODULE B: Bespoke Spruce Health Care Console
-            Header: "Secure Clinical Communications (Spruce Health)"
-            Tier 1 (All Members): "Care Desk Direct"
-            Tier 2 (Concierge VIP Members): "Physician Direct VIP Hotline" (Gold-bordered #D4AF37)
-            Gated via isConciergeVIP
-           ========================================================================= */}
-        <div className="lg:col-span-7 bg-[#121826] border border-border-midnight rounded-xl p-8 flex flex-col justify-between shadow-[0_20px_50px_rgba(0,0,0,0.6)]">
+        {/* MODULE 2: Direct Spruce Health Care Messenger */}
+        <div className="lg:col-span-6 bg-[#121826] border border-[#D4AF37]/20 rounded-xl p-8 flex flex-col justify-between shadow-2xl">
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <span className="font-mono text-[11px] uppercase tracking-widest text-champagne-gold font-semibold px-2.5 py-1 rounded bg-canvas-obsidian border border-border-gold-subtle">
-                Bespoke Care Console
+              <span className="font-mono text-[11px] uppercase tracking-widest text-[#D4AF37] font-semibold px-2.5 py-1 rounded bg-[#0B0F19] border border-[#D4AF37]/30">
+                Communication Hub
               </span>
-              <span className="font-mono text-[10px] text-text-surface-muted">
-                HIPAA-Compliant Encrypted Relay
-              </span>
+              <span className="font-mono text-[10px] text-emerald-400">HIPAA Encrypted</span>
             </div>
 
             <div className="space-y-2">
-              <h2 className="font-display text-2xl text-text-surface">
-                Secure Clinical Communications (Spruce Health)
-              </h2>
-              <p className="font-body text-sm text-text-surface-variant">
-                Direct asynchronous and priority messaging channels powered by Spruce Health.
+              <h2 className="font-display text-2xl text-white">Spruce Health Channels</h2>
+              <p className="font-body text-xs text-slate-400 leading-relaxed">
+                Connect directly with Dr. David Andreas Runheim and clinical staff without public web forms.
               </p>
             </div>
 
-            {/* TIER 1: Care Desk Direct (Available to all members) */}
-            <div className="p-5 rounded-lg bg-canvas-obsidian border border-border-midnight space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-vitality-sage" />
-                  <h3 className="font-display text-lg text-text-surface">Tier 1: Care Desk Direct</h3>
+            <div className="space-y-3 pt-2">
+              <a
+                href="sms:+18005550199"
+                className="w-full p-4 rounded-lg bg-[#0B0F19] border border-slate-800 hover:border-[#D4AF37] flex items-center justify-between transition-all group"
+              >
+                <div className="text-left">
+                  <span className="font-mono text-xs text-[#D4AF37] block font-semibold">
+                    Care Desk Direct SMS
+                  </span>
+                  <span className="font-mono text-[11px] text-slate-400">
+                    +1 (800) 555-0199
+                  </span>
                 </div>
-                <span className="font-mono text-[10px] text-text-surface-muted uppercase">
-                  Staff Triage &bull; Active
+                <span className="text-[#D4AF37] text-xs font-mono group-hover:translate-x-1 transition-transform">
+                  &rarr;
                 </span>
-              </div>
-              <p className="font-body text-xs text-text-surface-variant leading-relaxed">
-                Connect with our clinical administrative team for protocol scheduling, pre-intake safety packets, and non-emergent nursing triage.
-              </p>
-              <div className="flex flex-wrap items-center gap-3 pt-2">
-                <a
-                  href="sms:+18005550199"
-                  className="px-4 py-2 rounded-lg bg-surface-midnight hover:bg-surface-container border border-border-midnight hover:border-border-gold-subtle text-text-surface font-mono text-xs transition-colors flex items-center gap-2"
-                >
-                  <svg className="w-3.5 h-3.5 text-champagne-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                  </svg>
-                  <span>SMS Direct: +1 (800) 555-0199</span>
-                </a>
-                <a
-                  href="https://spruce.care/yourpractice"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-4 py-2 rounded-lg bg-surface-midnight hover:bg-surface-container border border-border-midnight hover:border-border-gold-subtle text-text-surface font-mono text-xs transition-colors flex items-center gap-2"
-                >
-                  <svg className="w-3.5 h-3.5 text-champagne-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 015.656 0l4 4a4 4 0 01-5.656 5.656l-1.102-1.101" />
-                  </svg>
-                  <span>Open Spruce Web App</span>
-                </a>
-              </div>
-            </div>
+              </a>
 
-            {/* TIER 2: Physician Direct VIP Hotline (Gold-bordered #D4AF37) */}
-            <div className="relative rounded-lg p-5 bg-canvas-obsidian border border-[#D4AF37] shadow-[0_0_25px_rgba(212,175,55,0.15)] transition-all">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#D4AF37] animate-pulse" />
-                    <h3 className="font-display text-lg text-[#D4AF37]">
-                      Tier 2: Physician Direct VIP Hotline
-                    </h3>
-                  </div>
-                  <span className="font-mono text-[10px] uppercase tracking-wider text-[#D4AF37] bg-[#D4AF37]/10 px-2 py-0.5 rounded border border-[#D4AF37]/30">
-                    VIP Concierge
+              <a
+                href="https://spruce.care/yourpractice"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full p-4 rounded-lg bg-[#0B0F19] border border-slate-800 hover:border-[#D4AF37] flex items-center justify-between transition-all group"
+              >
+                <div className="text-left">
+                  <span className="font-mono text-xs text-[#D4AF37] block font-semibold">
+                    Spruce Patient Web App
+                  </span>
+                  <span className="font-mono text-[11px] text-slate-400">
+                    Asynchronous messaging &amp; care coordination
                   </span>
                 </div>
-                <p className="font-body text-xs text-text-surface-variant leading-relaxed">
-                  Priority direct encrypted cellular corridor to Dr. David Andreas Runheim, MD for urgent biomarker anomalies and bespoke protocol titration.
-                </p>
-                <div className="flex flex-wrap items-center gap-3 pt-2">
-                  <a
-                    href="tel:+18005550188"
-                    className="px-4 py-2 rounded-lg bg-[#D4AF37] hover:bg-champagne-gold-light text-text-on-gold font-mono text-xs font-bold transition-all flex items-center gap-2 btn-luxury-shimmer"
-                  >
-                    <span>Direct Call: +1 (800) 555-0188</span>
-                  </a>
-                  <span className="font-mono text-[11px] text-vitality-sage">
-                    Average Physician Response: &lt; 15 Minutes
-                  </span>
-                </div>
-              </div>
-
-              {/* Gated Overlay for Standard Members: Frosted-glass backdrop-blur-md bg-black/50 with gold padlock */}
-              {!isConciergeVIP && (
-                <div className="absolute inset-0 rounded-lg backdrop-blur-md backdrop-blur-sm bg-black/50 border border-border-midnight flex flex-col items-center justify-center p-6 text-center z-20 transition-all duration-300 animate-in fade-in">
-                  {/* Gold Padlock Icon */}
-                  <div className="w-10 h-10 rounded-full bg-surface-midnight border border-[#D4AF37] flex items-center justify-center text-[#D4AF37] mb-2.5 shadow-[0_0_15px_rgba(212,175,55,0.3)]">
-                    <svg className="w-5 h-5 text-[#D4AF37]" fill="currentColor" viewBox="0 0 24 24">
-                      <path fillRule="evenodd" d="M12 1.5a5.25 5.25 0 00-5.25 5.25v3a3 3 0 00-3 3v6.75a3 3 0 003 3h10.5a3 3 0 003-3v-6.75a3 3 0 00-3-3v-3c0-2.9-2.35-5.25-5.25-5.25zm3.75 8.25v-3a3.75 3.75 0 00-7.5 0v3h7.5z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <p className="font-mono text-xs text-text-surface max-w-sm mb-3">
-                    Direct Physician Hotline is reserved exclusively for Concierge VIP members.{" "}
-                    <Link
-                      href="/membership#comparison"
-                      className="text-[#D4AF37] hover:text-champagne-gold-light tracking-wider font-semibold underline underline-offset-4"
-                    >
-                      [Upgrade Membership Tier]
-                    </Link>
-                  </p>
-                </div>
-              )}
+                <span className="text-[#D4AF37] text-xs font-mono group-hover:translate-x-1 transition-transform">
+                  &rarr;
+                </span>
+              </a>
             </div>
           </div>
 
-          <div className="pt-6 mt-6 border-t border-border-midnight flex items-center justify-between text-[11px] font-mono text-text-surface-muted">
-            <span>Powered by Spruce Health Care Messenger</span>
-            <span>BAA Signed &bull; SOC2 Certified</span>
+          <div className="pt-6 border-t border-slate-800 text-[10px] font-mono text-slate-500">
+            Powered by Spruce Health BAA &bull; Zero messaging records stored locally
           </div>
         </div>
 
-        {/* =========================================================================
-            MODULE C: Retainer & Payment Management Vault
-            Framed in Midnight Navy (#121826) with thin metallic borders (border border-[#D4AF37]/30).
-            Zero-Financial-Data: PCI-DSS Level 1 tokenized Stripe Customer Portal.
-           ========================================================================= */}
-        <div className="lg:col-span-12 bg-[#121826] border border-[#D4AF37]/30 rounded-xl p-8 shadow-[0_20px_50px_rgba(0,0,0,0.6)] space-y-6 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-champagne-gold/5 blur-3xl pointer-events-none rounded-full" />
-
-          {/* Module C Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border-midnight pb-6">
+        {/* MODULE 3: Full-Width Retainers & Cal.com Scheduling Desk */}
+        <div className="lg:col-span-12 bg-[#121826] border border-[#D4AF37]/30 rounded-xl p-8 shadow-2xl space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-6">
             <div className="space-y-1">
-              <div className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-champagne-gold">
-                <span className="w-1.5 h-1.5 rounded-full bg-vitality-sage animate-pulse" />
-                <span>Financial Enclave &bull; Module 03</span>
-              </div>
-              <h2 className="font-display text-2xl text-text-surface">
-                Retainer &amp; Payment Management
+              <span className="text-xs font-mono uppercase tracking-widest text-[#D4AF37]">
+                Concierge Engine
+              </span>
+              <h2 className="font-display text-2xl text-white">
+                Scheduling &amp; Retainer Management
               </h2>
-              <p className="font-body text-xs text-text-surface-variant">
-                PCI-DSS Level 1 tokenized billing portal, membership retainers, and concierge encounter credits.
-              </p>
             </div>
-
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-canvas-obsidian border border-vitality-sage/30 text-xs font-mono text-vitality-sage">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
-              <span>Zero Card Data Persisted &bull; Stripe PCI-DSS Level 1</span>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setIsBookingOpen(true)}
+                className="py-2.5 px-6 rounded-full bg-[#D4AF37] hover:bg-[#E6C65C] text-[#0B0F19] font-mono text-xs font-bold uppercase tracking-wider transition-all shadow-[0_0_15px_rgba(212,175,55,0.25)] cursor-pointer"
+              >
+                Book via Cal.com
+              </button>
+              <a
+                href="https://billing.stripe.com/p/session/test_portal_session_cognitive_edge"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="py-2.5 px-5 rounded-full bg-[#0B0F19] hover:bg-slate-900 border border-[#D4AF37]/40 text-[#D4AF37] font-mono text-xs uppercase tracking-wider transition-all"
+              >
+                Stripe Customer Portal
+              </a>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Feature 1: Active Membership Retainer Card */}
-            <div className="p-6 rounded-xl bg-canvas-obsidian border border-border-midnight space-y-4 flex flex-col justify-between">
-              <div className="space-y-3">
-                <span className="font-mono text-[10px] uppercase tracking-wider text-text-surface-muted">
-                  Membership Retainer Status
-                </span>
-                <div className="space-y-1">
-                  <h3 className="font-display text-xl text-text-surface">
-                    {isConciergeVIP ? "Concierge VIP Retainer Active" : "Cognitive Edge Member"}
-                  </h3>
-                  <div className="flex items-center gap-2 pt-1">
-                    <span className="w-2 h-2 rounded-full bg-vitality-sage animate-ping" />
-                    <span className="font-mono text-xs text-vitality-sage font-semibold uppercase tracking-wider">
-                      Current &bull; Good Standing
-                    </span>
-                  </div>
-                </div>
-                <p className="font-body text-xs text-text-surface-variant leading-relaxed">
-                  {isConciergeVIP
-                    ? "Full concierge neuro-restorative coverage including 24/7 direct physician routing and on-demand clinical titrations."
-                    : "Standard neuro-metabolic monitoring, biannual laboratory evaluations, and Care Desk direct communication corridor."}
-                </p>
-              </div>
-
-              <div className="pt-4 border-t border-border-midnight space-y-1 font-mono text-[11px] text-text-surface-muted">
-                <div className="flex justify-between">
-                  <span>Renewal Cycle:</span>
-                  <span className="text-text-surface">October 1, 2026</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Cadence:</span>
-                  <span className="text-champagne-gold">Renews Automatically</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Feature 2: Tokenized Stripe Customer Portal Bridge */}
-            <div className="p-6 rounded-xl bg-canvas-obsidian border border-border-midnight space-y-4 flex flex-col justify-between">
-              <div className="space-y-3">
-                <span className="font-mono text-[10px] uppercase tracking-wider text-text-surface-muted">
-                  Billing &amp; Tax Documentation
-                </span>
-                <h3 className="font-display text-xl text-text-surface">
-                  Invoices &amp; Superbills
-                </h3>
-                <p className="font-body text-xs text-text-surface-variant leading-relaxed">
-                  Access official itemized Superbills with ICD-10 diagnostic codes, modify card payment tokens, 
-                  or review past encounter retainer receipts in Stripe&apos;s encrypted vault.
-                </p>
-              </div>
-
-              <div className="space-y-3 pt-2">
-                <a
-                  href="https://billing.stripe.com/p/session/test_portal_session_cognitive_edge"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full py-3 px-4 rounded-lg bg-surface-midnight hover:bg-surface-container border border-border-gold-subtle hover:border-champagne-gold text-champagne-gold font-mono text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2"
-                >
-                  <span>Manage Retainer &amp; Invoices</span>
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                  </svg>
-                </a>
-                <p className="font-mono text-[10px] text-text-surface-muted text-center">
-                  Redirects securely to Stripe Billing Engine
-                </p>
-              </div>
-            </div>
-
-            {/* Feature 3: Concierge Booking Shortcuts */}
-            <div className="p-6 rounded-xl bg-canvas-obsidian border border-[#D4AF37]/30 space-y-4 flex flex-col justify-between shadow-inner">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-[10px] uppercase tracking-wider text-champagne-gold font-semibold">
-                    Fast-Track Scheduling
-                  </span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-champagne-gold animate-pulse" />
-                </div>
-                <h3 className="font-display text-xl text-text-surface">
-                  Concierge Booking Desk
-                </h3>
-                <p className="font-body text-xs text-text-surface-variant leading-relaxed">
-                  Schedule clinical review blocks, laboratory redraw sessions, or in-clinic neuromodulation cycles directly 
-                  without re-entering intake questionnaires or personal data.
-                </p>
-              </div>
-
-              <div className="space-y-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setIsBookingOpen(true)}
-                  className="w-full py-3 px-4 rounded-lg bg-champagne-gold hover:bg-champagne-gold-light text-text-on-gold font-mono text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(212,175,55,0.25)] btn-luxury-shimmer"
-                >
-                  <span>Open Cal.com Scheduling Desk</span>
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                </button>
-                <p className="font-mono text-[10px] text-champagne-gold/80 text-center">
-                  Instant Verification &bull; Cal.com Embed
-                </p>
-              </div>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-slate-400 leading-relaxed font-body">
+            <p>
+              <strong className="text-white block font-mono mb-1">Cal.com Embedded Appointments</strong>
+              Appointments sync directly to our clinical master calendar. Rescheduling, clinical consultations, and laboratory draw visits require no repetitive intake questionnaires.
+            </p>
+            <p>
+              <strong className="text-white block font-mono mb-1">Stripe Retainer &amp; Superbill Vault</strong>
+              Payment cards, retainer subscriptions, itemized Superbills with ICD-10 diagnostic codes, and tax documentation are tokenized securely within Stripe PCI-DSS Level 1 infrastructure.
+            </p>
           </div>
         </div>
       </main>
 
-      {/* =========================================================================
-          TASK 1: Discrete Floating VIP Tier Switcher Preview Bar
-          Anchored subtly in the bottom-right corner of the viewport
-         ========================================================================= */}
-      <aside
-        aria-label="VIP Preview Switcher"
-        className="fixed bottom-6 right-6 z-40 bg-surface-midnight/95 backdrop-blur-xl border border-border-gold-accent rounded-full p-1.5 shadow-[0_12px_35px_rgba(0,0,0,0.85)] flex items-center gap-1.5 transition-all duration-300 hover:border-champagne-gold"
-      >
-        <div className="hidden sm:flex items-center gap-1.5 px-3 font-mono text-[10px] text-text-surface-muted uppercase tracking-wider">
-          <span className="w-1.5 h-1.5 rounded-full bg-champagne-gold animate-pulse" />
-          <span>Tier Switcher:</span>
-        </div>
-        <button
-          type="button"
-          onClick={() => setIsConciergeVIP(false)}
-          className={`px-3 py-1.5 rounded-full font-mono text-[11px] uppercase tracking-wider transition-all duration-200 ${
-            !isConciergeVIP
-              ? "bg-canvas-obsidian text-text-surface border border-border-gold-subtle font-semibold shadow-inner"
-              : "text-text-surface-muted hover:text-text-surface"
-          }`}
-        >
-          Standard Cognitive Edge
-        </button>
-        <button
-          type="button"
-          onClick={() => setIsConciergeVIP(true)}
-          className={`px-3.5 py-1.5 rounded-full font-mono text-[11px] uppercase tracking-wider transition-all duration-200 flex items-center gap-1.5 ${
-            isConciergeVIP
-              ? "bg-champagne-gold text-text-on-gold font-bold shadow-[0_0_15px_rgba(212,175,55,0.4)]"
-              : "text-text-surface-muted hover:text-champagne-gold"
-          }`}
-        >
-          <span className="text-xs">★</span>
-          <span>Concierge VIP Member</span>
-        </button>
-      </aside>
-
-      {/* Upgrade Plan Modal */}
-      {showUpgradeModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-canvas-obsidian/80 backdrop-blur-sm">
-          <div className="max-w-md w-full bg-surface-midnight border border-border-gold-accent rounded-xl p-8 space-y-6 text-center shadow-[0_25px_60px_rgba(0,0,0,0.9)]">
-            <div className="w-12 h-12 mx-auto rounded-full bg-champagne-gold/10 border border-champagne-gold flex items-center justify-center text-champagne-gold text-lg">
-              ★
-            </div>
-            <div className="space-y-2">
-              <h3 className="font-display text-2xl text-text-surface">Concierge VIP Membership</h3>
-              <p className="font-body text-xs text-text-surface-variant">
-                Unlock 24/7 direct physician cellular access to Dr. David Andreas Runheim, priority diagnostic suite booking, and continuous bio-telemetry oversight.
-              </p>
-            </div>
-            <div className="pt-2 flex flex-col gap-3">
-              <button
-                type="button"
-                onClick={() => {
-                  setIsConciergeVIP(true);
-                  setShowUpgradeModal(false);
-                }}
-                className="w-full py-3 rounded-full bg-champagne-gold hover:bg-champagne-gold-light text-text-on-gold font-mono text-xs font-bold uppercase tracking-wider transition-all shadow-[0_0_20px_rgba(212,175,55,0.3)] btn-luxury-shimmer"
-              >
-                Enable Demo VIP Tier &rarr;
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowUpgradeModal(false)}
-                className="font-mono text-xs text-text-surface-muted hover:text-text-surface"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Bottom Footer */}
-      <footer className="text-center font-mono text-[10px] text-text-surface-muted pt-6 border-t border-border-gold-subtle">
-        &copy; 2026 COGNITIVE EDGE CLINICAL GROUP &bull; ZERO-ePHI QUARANTINE STANDARD &bull; eClinicalWorks &amp; Spruce BAA Secure
+      {/* Footer */}
+      <footer className="text-center font-mono text-[10px] text-slate-500 pt-6 border-t border-slate-800">
+        &copy; 2026 COGNITIVE EDGE CLINICAL GROUP &bull; ZERO-ePHI QUARANTINE ARCHITECTURE &bull; WINSTON-SALEM, NC
       </footer>
 
-      {/* On-Domain Cal.com Booking Modal */}
+      {/* On-Domain Cal.com Modal */}
       <BookingModal
         isOpen={isBookingOpen}
         onClose={() => setIsBookingOpen(false)}
@@ -480,12 +505,12 @@ function VaultInner() {
   );
 }
 
-export default function VaultMemberCommandCenter() {
+export default function VaultPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-canvas-obsidian flex items-center justify-center font-mono text-xs text-champagne-gold">
-          INITIALIZING ZERO-ePHI COMMAND CENTER...
+        <div className="min-h-screen bg-[#0B0F19] flex items-center justify-center font-mono text-xs text-[#D4AF37]">
+          INITIALIZING CONCIERGE ENCLAVE...
         </div>
       }
     >
