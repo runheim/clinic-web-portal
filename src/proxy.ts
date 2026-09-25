@@ -27,7 +27,8 @@ export function proxy(request: NextRequest) {
   // 2. Request header x-clinic-maintenance === "1"
   const isMaintenanceMode =
     process.env.MAINTENANCE_MODE === "true" ||
-    request.headers.get("x-clinic-maintenance") === "1";
+    (process.env.NODE_ENV !== "production" &&
+      request.headers.get("x-clinic-maintenance") === "1");
 
   if (isMaintenanceMode && !isBypassed) {
     const maintenanceUrl = new URL("/maintenance", request.url);
