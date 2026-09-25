@@ -131,9 +131,12 @@ export function verifyPassword(password: string, salt: string, hash: string): bo
   }
 }
 
-const AUTH_SECRET = process.env.CLINIC_AUTH_SECRET || "cognitive-edge-vault-auth-secret-2026";
+const AUTH_SECRET = process.env.CLINIC_AUTH_SECRET;
 
 export function createSessionToken(email: string): string {
+  if (!AUTH_SECRET) {
+    throw new Error("CLINIC_AUTH_SECRET must be configured in environment.");
+  }
   const payload = Buffer.from(
     JSON.stringify({
       email: email.toLowerCase().trim(),
@@ -148,8 +151,13 @@ export function verifySessionToken(token: string): { email: string } | null {
   try {
     const [payloadB64, signature] = token.split(".");
     if (!payloadB64 || !signature) return null;
+    if (!AUTH_SECRET) return null;
     const expectedSig = crypto.createHmac("sha256", AUTH_SECRET).update(payloadB64).digest("base64url");
-    if (signature !== expectedSig) return null;
+    const sigBuf = Buffer.from(signature, "utf8");
+    const expBuf = Buffer.from(expectedSig, "utf8");
+    if (sigBuf.length !== expBuf.length || !crypto.timingSafeEqual(sigBuf, expBuf)) {
+      return null;
+    }
     const data = JSON.parse(Buffer.from(payloadB64, "base64url").toString("utf8"));
     if (Date.now() > data.exp) return null;
     return { email: data.email };

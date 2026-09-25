@@ -8,8 +8,14 @@ export async function POST(req: NextRequest) {
     const signature = req.headers.get("x-cal-signature-256");
     const secret = process.env.CALCOM_WEBHOOK_SECRET;
 
-    // HMAC Signature Verification (if secret is configured in environment)
-    if (secret) {
+    // Fail closed: Webhook cannot accept events without an established verification secret
+    if (!secret) {
+      return NextResponse.json(
+        { error: "Cal.com webhook integration is unconfigured or disabled." },
+        { status: 503 }
+      );
+    }
+
       if (!signature) {
         return NextResponse.json(
           { error: "Missing HMAC signature header" },
@@ -22,7 +28,7 @@ export async function POST(req: NextRequest) {
           { status: 401 }
         );
       }
-    }
+
 
     const payload = JSON.parse(rawBody);
     const eventType = payload.triggerEvent || payload.event;

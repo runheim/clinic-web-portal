@@ -16,7 +16,7 @@ export interface OgCardOptions {
 }
 
 /** Default secret used for signing OG cards when environment secret is not configured */
-const DEFAULT_OG_SECRET = "cognitive-edge-clinic-og-secret-key-2026";
+const DEFAULT_OG_SECRET = "";
 
 // Standard SHA-256 Round Constants
 const K256: readonly number[] = [
@@ -144,8 +144,11 @@ export function generateOgSignature(title: string, secret?: string): string {
   const signingKey =
     secret ||
     process.env.OG_SIGNING_SECRET ||
-    process.env.AUTH_SECRET ||
-    DEFAULT_OG_SECRET;
+    process.env.AUTH_SECRET;
+
+  if (!signingKey) {
+    throw new Error("OG signing secret must be configured in environment.");
+  }
 
   const enc = new TextEncoder();
   let keyBytes: Uint8Array = enc.encode(signingKey);
