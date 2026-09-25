@@ -2,15 +2,20 @@ import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { AssessmentSchema, parseAndValidateJson } from "@/lib/security/validation/schemas";
 import { checkRateLimit, getRateLimitHeaders } from "@/lib/security/ratelimit/tokenBucket";
+import { savePathwayInquiry, PathwayInquiryRecord } from "@/lib/assessment/pathwayStore";
+
+export const DEFAULT_CLINICAL_RECIPIENT = "andreas.runheim@gmail.com";
 
 /**
- * Public Clinical Pre-Screening Assessment Endpoint
+ * Public Clinical Pre-Screening & Longevity Pathway Assessment Endpoint
  *
  * Requirements:
- * - Accepts POST requests containing assessment answers/scores
+ * - Accepts POST requests containing assessment answers or pathway objectives with email
  * - Enforces strict schema validation via AssessmentSchema
  * - Enforces per-IP rate limiting: maximum 5 requests/minute
  * - Rejects prototype pollution attempts and oversized payloads (>64KB)
+ * - Persists pathway inquiries into Netlify Blobs store pathway_inquiries with local disk fallback
+ * - Logs structured dispatch to clinical team
  * - Returns a sanitized summary adhering strictly to Zero-ePHI principles
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
@@ -49,10 +54,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return validation.errorResponse;
     }
 
-    const { answers, metadata } = validation.data;
+    const { answers, metadata, email, selectedObjectives, targetRecipient } = validation.data;
+
+    const assessmentId = crypto.randomUUID();
+    const timestamp = new Date().toISOString();
 
     // 4. Compute sanitized non-identifying summary metrics
-    const answerEntries = Object.entries(answers);
+    const answerEntries = answers ? Object.entries(answers) : [];
     const numericScores: number[] = [];
     const categoricalResponses: Record<string, string> = {};
 
@@ -71,24 +79,76 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           ) / 100
         : null;
 
-    const assessmentId = crypto.randomUUID();
-    const timestamp = new Date().toISOString();
-
     const sanitizedSummary = {
       assessmentId,
       status: "completed",
       quarantine: "ZERO_ePHI_ENFORCED",
       timestamp,
+      selectedObjectives: selectedObjectives && selectedObjectives.length > 0 ? selectedObjectives : undefined,
       metrics: {
         totalAnswers: answerEntries.length,
         numericAnswersCount: numericScores.length,
         categoricalAnswersCount: Object.keys(categoricalResponses).length,
         averageNumericScore: averageScore,
       },
-      answerKeys: Object.keys(answers),
+      answerKeys: answers ? Object.keys(answers) : [],
       metadata: metadata && Object.keys(metadata).length > 0 ? metadata : undefined,
     };
 
+    // 5. Handle pathway submission if email and selectedObjectives are provided
+    if (email && selectedObjectives && selectedObjectives.length > 0) {
+      const recipient = targetRecipient || DEFAULT_CLINICAL_RECIPIENT;
+
+      // Format clinical intake record
+      const formattedIntake = [
+        "=== CLINICAL INTAKE RECORD: PERSONALIZED LONGEVITY PATHWAY ===",
+        `Intended Recipient: ${recipient}`,
+        `Assigned Clinician: ${recipient}`,
+        `Submitter Email: ${email}`,
+        `Intake ID: ${assessmentId}`,
+        `Submission Timestamp: ${timestamp}`,
+        "Selected Priority Objectives:",
+        ...selectedObjectives.map((obj, idx) => `  ${idx + 1}. ${obj}`),
+      ].join("\n");
+
+      const pathwayRecord: PathwayInquiryRecord = {
+        id: assessmentId,
+        submitterEmail: email,
+        targetRecipient: recipient,
+        objectives: selectedObjectives,
+        submittedAt: timestamp,
+        formattedIntake,
+        status: "dispatched",
+        metadata: metadata && Object.keys(metadata).length > 0 ? metadata : undefined,
+      };
+
+      // Persist into Netlify Blobs store pathway_inquiries (with local disk fallback)
+      await savePathwayInquiry(pathwayRecord);
+
+      // Structured clinical dispatch log
+      console.log(
+        `[CLINICAL DISPATCH] Intended recipient: ${recipient} | Submitter: ${email} | Objectives: ${selectedObjectives.join(", ")}`
+      );
+
+      return NextResponse.json(
+        {
+          success: true,
+          recipient,
+          message: "Objectives successfully transmitted to clinical team.",
+          summary: sanitizedSummary,
+        },
+        {
+          status: 200,
+          headers: {
+            ...rlHeaders,
+            "Cache-Control": "no-store, no-cache, must-revalidate",
+            "X-Zero-ePHI-Quarantine": "enforced",
+          },
+        }
+      );
+    }
+
+    // 6. Default response for standard answers submissions
     return NextResponse.json(
       {
         success: true,

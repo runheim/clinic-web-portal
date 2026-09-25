@@ -58,10 +58,22 @@ export type RegisterInput = z.infer<typeof RegisterSchema>;
  */
 export const AssessmentSchema = z
   .object({
-    answers: z.record(z.string().max(100), z.union([z.number(), z.string().max(255)])),
+    answers: z.record(z.string().max(100), z.union([z.number(), z.string().max(255)])).optional(),
     metadata: z.record(z.string(), z.unknown()).optional(),
+    email: z.string().email().max(255).optional(),
+    targetRecipient: z.string().email().optional(),
+    selectedObjectives: z.array(z.string().max(100)).optional(),
   })
-  .strict();
+  .strict()
+  .refine(
+    (data) =>
+      data.answers !== undefined ||
+      (data.email !== undefined && data.selectedObjectives !== undefined),
+    {
+      message: "Assessment must include answers or pathway objectives with email.",
+      path: ["answers"],
+    }
+  );
 
 export type AssessmentInput = z.infer<typeof AssessmentSchema>;
 

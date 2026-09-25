@@ -4,16 +4,50 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
+export function isPasscodeLengthValid(password: string): boolean {
+  return password.length >= 6;
+}
+
+export function getPasscodeFeedback(password: string): {
+  isValid: boolean;
+  message: string;
+  variant: "empty" | "warning" | "valid";
+} {
+  if (password.length === 0) {
+    return {
+      isValid: false,
+      message: "• Passcode must be a minimum of 6 characters",
+      variant: "empty",
+    };
+  }
+  if (password.length < 6) {
+    return {
+      isValid: false,
+      message: `⚠ Passcode must be at least 6 characters (currently ${password.length})`,
+      variant: "warning",
+    };
+  }
+  return {
+    isValid: true,
+    message: "✓ Minimum length satisfied (6+ characters)",
+    variant: "valid",
+  };
+}
+
 export default function MemberLoginGateway() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [tier, setTier] = useState<"standard" | "vip">("standard");
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [authStatus, setAuthStatus] = useState<string | null>(null);
 
   const handleSelectDemo = (selectedTier: "standard" | "vip") => {
     setTier(selectedTier);
+    if (authStatus === "Passcode must be at least 6 characters.") {
+      setAuthStatus(null);
+    }
     if (selectedTier === "vip") {
       setEmail("vip.member@cognitiveedgeclinic.com");
       setPassword("CognitiveVIP$2026");
@@ -25,6 +59,12 @@ export default function MemberLoginGateway() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (password.length < 6) {
+      setAuthStatus("Passcode must be at least 6 characters.");
+      return;
+    }
+
     setIsAuthenticating(true);
     setAuthStatus("VERIFYING TLS 1.3 CLIENT TOKEN...");
 
@@ -143,13 +183,86 @@ export default function MemberLoginGateway() {
               <div className="relative">
                 <input
                   id="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   required
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (authStatus === "Passcode must be at least 6 characters.") {
+                      setAuthStatus(null);
+                    }
+                  }}
                   placeholder="••••••••••••"
-                  className="w-full px-4 py-3 rounded-lg bg-canvas-obsidian border border-border-midnight text-text-surface font-mono text-xs placeholder:text-text-surface-muted/40 focus:outline-none focus:border-champagne-gold focus:ring-1 focus:ring-champagne-gold/40 transition-all tracking-widest"
+                  className={`w-full pl-4 pr-11 py-3 rounded-lg bg-canvas-obsidian border border-border-midnight text-text-surface font-mono text-xs placeholder:text-text-surface-muted/40 focus:outline-none focus:border-champagne-gold focus:ring-1 focus:ring-champagne-gold/40 transition-all ${
+                    showPassword ? "" : "tracking-widest"
+                  }`}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  aria-label={showPassword ? "Hide passcode" : "Show passcode"}
+                  data-testid="toggle-passcode-visibility"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded text-text-surface-muted hover:text-champagne-gold transition-colors focus:outline-none focus:ring-1 focus:ring-champagne-gold/40"
+                >
+                  {showPassword ? (
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.75}
+                        d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"
+                      />
+                    </svg>
+                  ) : (
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.75}
+                        d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"
+                      />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.75}
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                      />
+                    </svg>
+                  )}
+                </button>
+              </div>
+
+              {/* Passcode Real-Time Length Requirement Feedback */}
+              <div
+                data-testid="passcode-length-feedback"
+                aria-live="polite"
+                className="font-mono text-[11px] transition-colors flex items-center gap-1.5"
+              >
+                {password.length === 0 ? (
+                  <span className="text-text-surface-muted">
+                    • Passcode must be a minimum of 6 characters
+                  </span>
+                ) : password.length < 6 ? (
+                  <span className="text-amber-400">
+                    ⚠ Passcode must be at least 6 characters (currently {password.length})
+                  </span>
+                ) : (
+                  <span className="text-vitality-sage">
+                    ✓ Minimum length satisfied (6+ characters)
+                  </span>
+                )}
               </div>
             </div>
 
@@ -213,7 +326,15 @@ export default function MemberLoginGateway() {
 
             {/* Live Telemetry Status Banner on Submit */}
             {authStatus && (
-              <div className="p-2.5 rounded bg-canvas-obsidian border border-vitality-sage/40 text-center font-mono text-[10px] text-vitality-sage animate-pulse">
+              <div
+                role="status"
+                data-testid="auth-status-banner"
+                className={`p-2.5 rounded bg-canvas-obsidian border text-center font-mono text-[10px] ${
+                  authStatus === "Passcode must be at least 6 characters."
+                    ? "border-amber-400/50 text-amber-400"
+                    : "border-vitality-sage/40 text-vitality-sage animate-pulse"
+                }`}
+              >
                 {authStatus}
               </div>
             )}
