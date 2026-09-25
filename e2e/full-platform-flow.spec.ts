@@ -251,39 +251,24 @@ test.describe("Cognitive Edge Clinic — Full-Platform Verification & Zero-ePHI 
     await expect(eCwAnchor).toHaveAttribute("rel", "noopener noreferrer");
   });
 
-  // SCENARIO 7: Phase 16 — Command-K Palette, Schema.org Knowledge Graph & PWA Offline Sanctuary
-  test("Scenario 7: Phase 16 - Command-K Search, Schema.org JSON-LD, PWA Manifest, and Offline Sanctuary", async ({
+  // SCENARIO 7: Phase 16 — Streamlined Navigation, Schema.org Knowledge Graph & PWA Offline Sanctuary
+  test("Scenario 7: Phase 16 - Streamlined Navigation, Schema.org JSON-LD, PWA Manifest, and Offline Sanctuary", async ({
     page,
   }) => {
-    // 1. Verify Command-K Search Palette on Homepage
+    // 1. Verify Streamlined Navigation Header on Homepage
     await page.goto("/");
 
-    // Click TopNavBar search trigger button
+    // Verify search trigger is pruned from TopNavBar
     const searchTrigger = page.locator('button[aria-label*="Search"]');
-    await expect(searchTrigger).toBeVisible();
-    await searchTrigger.click();
+    await expect(searchTrigger).toHaveCount(0);
 
-    // Verify search modal dialog is visible
-    const searchDialog = page.locator('div[role="dialog"][aria-label="Clinical Command Search Palette"]');
-    await expect(searchDialog).toBeVisible();
-
-    // Type query "TMS" and verify filtered results
-    const searchInput = searchDialog.locator('input[role="combobox"]');
-    await expect(searchInput).toBeVisible();
-    await searchInput.fill("TMS");
-
-    // Expect TMS result
-    await expect(page.getByText("High-Frequency DLPFC TMS Neuromodulation")).toBeVisible();
-
-    // Press Escape to close modal
-    await page.keyboard.press("Escape");
-    await expect(searchDialog).not.toBeVisible();
-
-    // Test Keyboard shortcut: press Meta+k / Control+k to open
-    await page.keyboard.press("Control+k");
-    await expect(searchDialog).toBeVisible();
-    await page.keyboard.press("Escape");
-    await expect(searchDialog).not.toBeVisible();
+    // Verify core navigation links are rendered cleanly
+    await expect(page.locator('header nav a:has-text("Services")')).toBeVisible();
+    await expect(page.locator('header nav a:has-text("Ledger")')).toBeVisible();
+    await expect(page.locator('header nav a:has-text("Briefings")')).toBeVisible();
+    await expect(page.locator('header nav a:has-text("Membership")')).toBeVisible();
+    await expect(page.locator('header nav a:has-text("Biographies")')).toBeVisible();
+    await expect(page.locator('header a:has-text("Diagnostic Vault")')).toHaveCount(0);
 
     // 2. Verify Schema.org JSON-LD Structured Data
     const schemaScript = page.locator('script[type="application/ld+json"]');

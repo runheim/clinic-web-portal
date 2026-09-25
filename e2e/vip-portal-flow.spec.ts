@@ -67,12 +67,17 @@ test.describe("Cognitive Edge Clinic — VIP Portal & Full Site E2E Verification
   test("Test 3: eCW healow Link Integrity - Diagnostic Vault buttons link to eClinicalWorks portal with security attributes", async ({
     page,
   }) => {
-    // Check navigation link
+    // Check navigation header - Diagnostic Vault should be pruned from navbar
     await page.goto("/");
     const navEcwLink = page.locator('header a:has-text("Diagnostic Vault")');
-    await expect(navEcwLink).toHaveAttribute("href", "https://mycwXX.eclinicalworks.com/portal");
-    await expect(navEcwLink).toHaveAttribute("target", "_blank");
-    await expect(navEcwLink).toHaveAttribute("rel", "noopener noreferrer");
+    await expect(navEcwLink).toHaveCount(0);
+
+    // Verify remaining primary nav links are present and active
+    await expect(page.locator('header nav a:has-text("Services")')).toBeVisible();
+    await expect(page.locator('header nav a:has-text("Ledger")')).toBeVisible();
+    await expect(page.locator('header nav a:has-text("Briefings")')).toBeVisible();
+    await expect(page.locator('header nav a:has-text("Membership")')).toBeVisible();
+    await expect(page.locator('header nav a:has-text("Biographies")')).toBeVisible();
 
     // Check /vault portal action button
     await page.goto("/vault");
@@ -374,21 +379,14 @@ test.describe("Cognitive Edge Clinic — VIP Portal & Full Site E2E Verification
     const brandLogo = page.getByRole("link", { name: "Cognitive Edge Home" });
     await expect(brandLogo).toBeVisible();
 
-    const searchTrigger = page.locator('button[aria-label="Quick search clinical modalities, biomarkers, briefings, and actions (Cmd+K)"]');
-    await expect(searchTrigger).toBeVisible();
+    const searchTrigger = page.locator('button[aria-label*="Search"]');
+    await expect(searchTrigger).toHaveCount(0);
 
     const menuToggle = page.locator('button[aria-controls="mobile-menu"]');
     await expect(menuToggle).toBeVisible();
     await expect(menuToggle).toHaveAttribute("aria-expanded", "false");
 
-    // 4. Test Quick Search Trigger
-    await searchTrigger.click();
-    const searchDialog = page.locator('div[role="dialog"][aria-label="Clinical Command Search Palette"]');
-    await expect(searchDialog).toBeVisible();
-    await page.keyboard.press("Escape");
-    await expect(searchDialog).not.toBeVisible();
-
-    // 5. Open Luxury Mobile Drawer
+    // 4. Open Luxury Mobile Drawer
     await menuToggle.click();
     await expect(menuToggle).toHaveAttribute("aria-expanded", "true");
 
@@ -396,7 +394,7 @@ test.describe("Cognitive Edge Clinic — VIP Portal & Full Site E2E Verification
     await expect(drawer).toBeVisible();
     await expect(page.locator("body")).toHaveClass(/overflow-hidden/);
 
-    // 6. Verify Category 1: Clinical Modalities & Science
+    // 5. Verify Category 1: Clinical Modalities & Science
     await expect(drawer.getByText("Clinical Modalities & Science")).toBeVisible();
     await expect(drawer.getByRole("link", { name: "Services" })).toBeVisible();
     await expect(drawer.getByRole("link", { name: "The Ledger" })).toBeVisible();
@@ -404,9 +402,9 @@ test.describe("Cognitive Edge Clinic — VIP Portal & Full Site E2E Verification
     await expect(drawer.getByRole("link", { name: "Membership" })).toBeVisible();
     await expect(drawer.getByRole("link", { name: "Biographies" })).toBeVisible();
 
-    // 7. Verify Category 2: Member Enclaves
+    // 6. Verify Category 2: Member Enclaves (Pruned of Diagnostic Vault)
     await expect(drawer.getByText("Member Enclaves")).toBeVisible();
-    await expect(drawer.getByRole("link", { name: /Diagnostic Vault/i })).toBeVisible();
+    await expect(drawer.getByRole("link", { name: /Diagnostic Vault/i })).toHaveCount(0);
     await expect(drawer.getByRole("link", { name: "Client Portal" })).toBeVisible();
     await expect(drawer.getByRole("link", { name: "Member Login" })).toBeVisible();
 
