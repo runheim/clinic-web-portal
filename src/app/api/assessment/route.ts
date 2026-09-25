@@ -3,6 +3,7 @@ import crypto from "crypto";
 import { AssessmentSchema, parseAndValidateJson } from "@/lib/security/validation/schemas";
 import { checkRateLimit, getRateLimitHeaders } from "@/lib/security/ratelimit/tokenBucket";
 import { savePathwayInquiry, PathwayInquiryRecord } from "@/lib/assessment/pathwayStore";
+import { sendPathwayInquiryEmail } from "@/lib/email/resend";
 
 export const DEFAULT_CLINICAL_RECIPIENT = "andreas.runheim@gmail.com";
 
@@ -125,10 +126,22 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       // Persist into Netlify Blobs store pathway_inquiries (with local disk fallback)
       await savePathwayInquiry(pathwayRecord);
 
+      // Transmit transactional clinical email via Resend
+      const emailResult = await sendPathwayInquiryEmail({
+        submitterEmail: email,
+        recipient,
+        selectedObjectives,
+        assessmentId,
+        timestamp,
+      });
+
       // Structured clinical dispatch log
       console.log(
         `[CLINICAL DISPATCH] Intended recipient: ${recipient} | Submitter: ${email} | Objectives: ${selectedObjectives.join(", ")}`
       );
+      if (emailResult.id) {
+        console.log(`[RESEND DISPATCH] ID: ${emailResult.id}`);
+      }
 
       return NextResponse.json(
         {
