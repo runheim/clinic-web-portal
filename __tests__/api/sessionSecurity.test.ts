@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { GET as sessionHandler } from "@/app/api/auth/session/route";
+import { GET as sessionHandler, POST as sessionPostHandler } from "@/app/api/auth/session/route";
 import {
   createSessionToken,
   verifySessionToken,
@@ -288,6 +288,91 @@ describe("API Security Battery: Session Security & Cookie Hardening", () => {
       expect(res.status).toBe(200);
       const json = await res.json();
       expect(json).toEqual({ authenticated: false });
+    });
+  });
+
+  // ==========================================================================
+  // 4. Bearer Token & Request Structure Validation
+  // ==========================================================================
+  describe("4. Bearer Token & Request Structure Validation", () => {
+    test("accepts valid session token via Authorization Bearer header", async () => {
+      const email = "neurologist@cognitiveedgeclinic.com";
+      const validToken = createSessionToken(email);
+
+      const req = new NextRequest("https://cognitiveedgeclinic.com/api/auth/session", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${validToken}`,
+          "x-forwarded-for": "198.51.100.96",
+        },
+      });
+
+      const res = await sessionHandler(req);
+      expect(res.status).toBe(200);
+      const json = await res.json();
+      expect(json).toEqual({
+        authenticated: true,
+        email,
+      });
+    });
+
+    test("fails closed when Authorization header does not follow Bearer format", async () => {
+      const email = "neurologist@cognitiveedgeclinic.com";
+      const validToken = createSessionToken(email);
+
+      const req = new NextRequest("https://cognitiveedgeclinic.com/api/auth/session", {
+        method: "GET",
+        headers: {
+          Authorization: `Basic ${validToken}`,
+          "x-forwarded-for": "198.51.100.97",
+        },
+      });
+
+      const res = await sessionHandler(req);
+      expect(res.status).toBe(200);
+      const json = await res.json();
+      expect(json).toEqual({ authenticated: false });
+    });
+
+    test("POST /api/auth/session validates session request structure", async () => {
+      const email = "researcher@cognitiveedgeclinic.com";
+      const validToken = createSessionToken(email);
+
+      const req = new NextRequest("https://cognitiveedgeclinic.com/api/auth/session", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-forwarded-for": "198.51.100.98",
+        },
+        body: JSON.stringify({ token: validToken }),
+      });
+
+      const res = await sessionPostHandler(req);
+      expect(res.status).toBe(200);
+      const json = await res.json();
+      expect(json).toEqual({
+        authenticated: true,
+        email,
+      });
+    });
+
+    test("POST /api/auth/session strictly rejects unexpected properties with HTTP 400", async () => {
+      const email = "researcher@cognitiveedgeclinic.com";
+      const validToken = createSessionToken(email);
+
+      const req = new NextRequest("https://cognitiveedgeclinic.com/api/auth/session", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-forwarded-for": "198.51.100.99",
+        },
+        body: JSON.stringify({ token: validToken, unauthorizedField: "malicious" }),
+      });
+
+      const res = await sessionPostHandler(req);
+      expect(res.status).toBe(400);
+      const json = await res.json();
+      expect(["INVALID_PAYLOAD", "VALIDATION_ERROR"]).toContain(json.code);
     });
   });
 });

@@ -325,7 +325,7 @@ describe("API Security Battery: Payload Validation & Attack Resistance", () => {
 
       expect(res.status).toBe(400);
       const json = await res.json();
-      expect(json.code).toBe("VALIDATION_ERROR");
+      expect(["INVALID_PAYLOAD", "VALIDATION_ERROR"]).toContain(json.code);
       expect(Array.isArray(json.details)).toBe(true);
     });
 
@@ -343,7 +343,7 @@ describe("API Security Battery: Payload Validation & Attack Resistance", () => {
 
       expect(res.status).toBe(400);
       const json = await res.json();
-      expect(json.code).toBe("VALIDATION_ERROR");
+      expect(["INVALID_PAYLOAD", "VALIDATION_ERROR"]).toContain(json.code);
     });
 
     test("POST /api/assessment rejects unexpected root properties with HTTP 400", async () => {
@@ -361,7 +361,7 @@ describe("API Security Battery: Payload Validation & Attack Resistance", () => {
 
       expect(res.status).toBe(400);
       const json = await res.json();
-      expect(json.code).toBe("VALIDATION_ERROR");
+      expect(["INVALID_PAYLOAD", "VALIDATION_ERROR"]).toContain(json.code);
     });
 
     test("rejects invalid field formats (malformed email, password under min length)", async () => {

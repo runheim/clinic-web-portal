@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { AssessmentSchema, parseAndValidateJson } from "@/lib/security/validation/schemas";
-import { checkRateLimit, getClientIp, getRateLimitHeaders } from "@/lib/security/ratelimit/tokenBucket";
+import { checkRateLimit, getRateLimitHeaders } from "@/lib/security/ratelimit/tokenBucket";
 
 /**
  * Public Clinical Pre-Screening Assessment Endpoint
@@ -16,7 +16,8 @@ import { checkRateLimit, getClientIp, getRateLimitHeaders } from "@/lib/security
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     // 1. Resolve client IP for rate limiting
-    const ip = getClientIp(request);
+    const forwarded = request.headers.get("x-forwarded-for");
+    const ip = (forwarded ? forwarded.split(",")[0] : request.headers.get("x-real-ip"))?.trim() || "127.0.0.1";
 
     // 2. Strict rate limiting: 5 requests / minute per IP
     const rateLimit = checkRateLimit(ip, "/api/assessment", {

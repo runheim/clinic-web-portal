@@ -4,6 +4,7 @@ import { POST as registerHandler } from "@/app/api/auth/register/route";
 import { GET as sessionHandler } from "@/app/api/auth/session/route";
 import { POST as assessmentHandler } from "@/app/api/assessment/route";
 import { POST as calcomWebhookHandler } from "@/app/api/webhooks/calcom/route";
+import { GET as ogHandler } from "@/app/api/og/route";
 import {
   resetRateLimits,
   getRateLimitHeaders,
@@ -469,6 +470,66 @@ describe("API Security Battery: Tiered Rate Limiting & Header Contract", () => {
       );
       expect(allowed2.status).toBe(200);
       expect(allowed2.headers.get("X-RateLimit-Remaining")).toBe("4");
+    });
+  });
+
+  // ==========================================================================
+  // 7. OG Tier: Burst Limit of 30 req/min (SSR/Canvas Throttling)
+  // ==========================================================================
+  describe("7. OG Tier: Burst Limit of 30 req/min (SSR/Canvas Throttling)", () => {
+    test("GET /api/og permits exactly 30 requests, throttles 31st with HTTP 429", async () => {
+      const clientIp = "198.51.100.108";
+
+      for (let i = 0; i < 30; i++) {
+        const req = createRequest(
+          "https://cognitiveedgeclinic.com/api/og?title=Test",
+          "GET",
+          clientIp
+        );
+        const res = await ogHandler(req);
+        expect(res.status).toBe(200);
+        expect(res.headers.get("X-RateLimit-Remaining")).toBe(String(29 - i));
+        expect(res.headers.get("X-RateLimit-Reset")).toBeDefined();
+        expect(res.headers.get("Retry-After")).toBeNull();
+      }
+
+      // 31st request triggers HTTP 429
+      const blockedReq = createRequest(
+        "https://cognitiveedgeclinic.com/api/og?title=Test",
+        "GET",
+        clientIp
+      );
+      const blockedRes = await ogHandler(blockedReq);
+
+      expect(blockedRes.status).toBe(429);
+      expect(blockedRes.headers.get("X-RateLimit-Remaining")).toBe("0");
+      expect(blockedRes.headers.get("X-RateLimit-Reset")).toBeDefined();
+
+      const retryAfter = blockedRes.headers.get("Retry-After");
+      expect(retryAfter).toBeDefined();
+      expect(parseInt(retryAfter!, 10)).toBeGreaterThan(0);
+    });
+
+    test("throttling Client IP 1 does not affect Client IP 2 in OG tier", async () => {
+      const ip1 = "203.0.113.31";
+      const ip2 = "203.0.113.32";
+
+      for (let i = 0; i < 30; i++) {
+        await ogHandler(
+          createRequest("https://cognitiveedgeclinic.com/api/og?title=Test", "GET", ip1)
+        );
+      }
+
+      const blockedRes1 = await ogHandler(
+        createRequest("https://cognitiveedgeclinic.com/api/og?title=Test", "GET", ip1)
+      );
+      expect(blockedRes1.status).toBe(429);
+
+      const allowedRes2 = await ogHandler(
+        createRequest("https://cognitiveedgeclinic.com/api/og?title=Test", "GET", ip2)
+      );
+      expect(allowedRes2.status).toBe(200);
+      expect(allowedRes2.headers.get("X-RateLimit-Remaining")).toBe("29");
     });
   });
 });

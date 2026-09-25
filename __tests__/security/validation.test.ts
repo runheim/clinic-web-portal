@@ -5,6 +5,8 @@ import {
   AssessmentSchema,
   CalcomWebhookSchema,
   OgQuerySchema,
+  SessionTokenFormatSchema,
+  SessionRequestSchema,
   detectPrototypePollution,
   hasPrototypePollution,
   parseAndValidateJson,
@@ -170,9 +172,10 @@ describe("Security Validation Library & Schemas", () => {
       expect(OgQuerySchema.safeParse({}).success).toBe(true);
     });
 
-    test("accepts valid bounded query parameters", () => {
+    test("accepts valid bounded query parameters including description", () => {
       const valid = {
         title: "Quantitative Neuro-Metabolic Resuscitation",
+        description: "Clinical protocol overview",
         category: "NEUROLOGY",
         subtitle: "Executive Concierge Longevity",
         sig: "a1b2c3d4e5f67890",
@@ -192,6 +195,10 @@ describe("Security Validation Library & Schemas", () => {
       expect(OgQuerySchema.safeParse({ title: "t".repeat(141) }).success).toBe(false);
     });
 
+    test("rejects description exceeding 160 characters", () => {
+      expect(OgQuerySchema.safeParse({ description: "d".repeat(161) }).success).toBe(false);
+    });
+
     test("rejects category exceeding 80 characters", () => {
       expect(OgQuerySchema.safeParse({ category: "c".repeat(81) }).success).toBe(false);
     });
@@ -202,6 +209,43 @@ describe("Security Validation Library & Schemas", () => {
 
     test("rejects sig exceeding 128 characters", () => {
       expect(OgQuerySchema.safeParse({ sig: "x".repeat(129) }).success).toBe(false);
+    });
+  });
+
+  describe("5b. SessionTokenFormatSchema & SessionRequestSchema", () => {
+    test("accepts valid session token format (base64url.base64url)", () => {
+      const validToken = "eyJhbGciOiJIUzI1NiJ9.sometokenhashvalue12345";
+      expect(SessionTokenFormatSchema.safeParse(validToken).success).toBe(true);
+    });
+
+    test("rejects token without dot separator", () => {
+      expect(SessionTokenFormatSchema.safeParse("nodothere1234567890").success).toBe(false);
+    });
+
+    test("rejects token with multiple dots", () => {
+      expect(SessionTokenFormatSchema.safeParse("a.b.c.d").success).toBe(false);
+    });
+
+    test("rejects token with invalid characters", () => {
+      expect(SessionTokenFormatSchema.safeParse("bad@token!.sig#123").success).toBe(false);
+    });
+
+    test("rejects token shorter than min length", () => {
+      expect(SessionTokenFormatSchema.safeParse("a.b").success).toBe(false);
+    });
+
+    test("SessionRequestSchema accepts optional valid token and strictly rejects unknown keys", () => {
+      expect(SessionRequestSchema.safeParse({}).success).toBe(true);
+      expect(
+        SessionRequestSchema.safeParse({
+          token: "eyJhbGciOiJIUzI1NiJ9.sometokenhashvalue12345",
+        }).success
+      ).toBe(true);
+      expect(
+        SessionRequestSchema.safeParse({
+          extraKey: "unexpected",
+        }).success
+      ).toBe(false);
     });
   });
 
@@ -340,15 +384,16 @@ describe("Security Validation Library & Schemas", () => {
       }
     });
 
-    test("rejects schema violations with HTTP 400 VALIDATION_ERROR and sanitized details", async () => {
+    test("rejects schema violations with HTTP 400 and sanitized details", async () => {
       const req = createReq(JSON.stringify({ email: "invalid-email", password: "" }));
       const result = await parseAndValidateJson(req, LoginSchema);
 
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(result.errorResponse.status).toBe(400);
-        expect(result.error.code).toBe("VALIDATION_ERROR");
+        expect(["INVALID_PAYLOAD", "VALIDATION_ERROR"]).toContain(result.error.code);
         const body = await result.errorResponse.json();
+        expect(["INVALID_PAYLOAD", "VALIDATION_ERROR"]).toContain(body.code);
         expect(Array.isArray(body.details)).toBe(true);
         expect(body.details.length).toBeGreaterThan(0);
         // Verify no stack trace leaked

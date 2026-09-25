@@ -147,10 +147,18 @@ export function resolveRouteKey(route?: string): string {
  * Resolves configuration for a specific route key and optional overrides.
  */
 export function resolveConfig(routeKey: string, options?: RateLimitOptions): Required<RateLimitConfig> {
-  const baseConfig: RateLimitConfig =
+  let baseConfig: RateLimitConfig =
     customRouteConfigs.get(routeKey) ??
     DEFAULT_LIMIT_CONFIGS[routeKey as RouteCategory] ??
     DEFAULT_LIMIT_CONFIGS.default;
+
+  if (routeKey === "/api/og" || routeKey === "og") {
+    baseConfig = customRouteConfigs.get(routeKey) ?? {
+      capacity: 30,
+      refillRatePerMinute: 30,
+      windowMs: 60_000,
+    };
+  }
 
   const capacity = options?.capacity ?? baseConfig.capacity;
   const refillRatePerMinute = options?.refillRatePerMinute ?? baseConfig.refillRatePerMinute;
@@ -401,13 +409,8 @@ export function getRateLimitMetrics(): RateLimitMetrics {
  */
 export function getClientIp(request: NextRequest | Request): string {
   const forwarded = request.headers.get("x-forwarded-for");
-  if (forwarded) {
-    const firstIp = forwarded.split(",")[0]?.trim();
-    if (firstIp) return firstIp;
-  }
-  const realIp = request.headers.get("x-real-ip")?.trim();
-  if (realIp) return realIp;
-  return "127.0.0.1";
+  const ip = (forwarded ? forwarded.split(",")[0] : request.headers.get("x-real-ip"))?.trim() || "127.0.0.1";
+  return ip;
 }
 
 /**
@@ -416,7 +419,7 @@ export function getClientIp(request: NextRequest | Request): string {
  */
 export function getRateLimitHeaders(result: RateLimitResult): Record<string, string> {
   const headers: Record<string, string> = {
-    "X-RateLimit-Remaining": String(result.remainingTokens),
+    "X-RateLimit-Remaining": result.allowed ? String(result.remainingTokens) : "0",
     "X-RateLimit-Reset": String(result.resetTime),
   };
 

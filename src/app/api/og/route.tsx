@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { canvasRenderer, verifyOgSignature } from "@/lib/og/canvasRenderer";
-import { checkRateLimit, getClientIp, getRateLimitHeaders } from "@/lib/security/ratelimit/tokenBucket";
+import { checkRateLimit, getRateLimitHeaders } from "@/lib/security/ratelimit/tokenBucket";
 import { hasPrototypePollution, OgQuerySchema } from "@/lib/security/validation/schemas";
 
 export const runtime = "edge";
@@ -15,9 +15,14 @@ export const runtime = "edge";
  * - subtitle (string, optional): Clinical context subtitle.
  * - sig (string, optional): HMAC-SHA256 signature to verify parameter integrity.
  */
-export async function GET(req: NextRequest): Promise<Response> {
-  const ip = getClientIp(req);
-  const rateLimit = checkRateLimit(ip, "default");
+export async function GET(request: NextRequest): Promise<Response> {
+  const forwarded = request.headers.get("x-forwarded-for");
+  const ip = (forwarded ? forwarded.split(",")[0] : request.headers.get("x-real-ip"))?.trim() || "127.0.0.1";
+  const rateLimit = checkRateLimit(ip, "/api/og", {
+    capacity: 30,
+    refillRatePerMinute: 30,
+    windowMs: 60_000,
+  });
   const rlHeaders = getRateLimitHeaders(rateLimit);
 
   if (!rateLimit.allowed) {
@@ -38,7 +43,7 @@ export async function GET(req: NextRequest): Promise<Response> {
   }
 
   try {
-    const { searchParams } = new URL(req.url);
+    const { searchParams } = new URL(request.url);
 
     const rawParams: Record<string, string> = {};
     searchParams.forEach((value, key) => {
@@ -64,11 +69,17 @@ export async function GET(req: NextRequest): Promise<Response> {
 
     const validation = OgQuerySchema.safeParse(rawParams);
     if (!validation.success) {
+      const formattedIssues = validation.error.issues.map((issue) => ({
+        path: issue.path.join("."),
+        message: issue.message,
+        code: issue.code,
+      }));
+
       return new Response(
         JSON.stringify({
-          error: "Invalid query parameters.",
-          code: "VALIDATION_ERROR",
-          details: validation.error.issues,
+          error: "Validation failed",
+          code: "INVALID_PAYLOAD",
+          details: formattedIssues,
         }),
         {
           status: 400,
@@ -81,10 +92,10 @@ export async function GET(req: NextRequest): Promise<Response> {
       );
     }
 
-    const rawTitle = searchParams.get("title");
-    const rawCategory = searchParams.get("category");
-    const rawSubtitle = searchParams.get("subtitle");
-    const sig = searchParams.get("sig");
+    const rawTitle = validation.data.title;
+    const rawCategory = validation.data.category;
+    const rawSubtitle = validation.data.description || validation.data.subtitle;
+    const sig = validation.data.sig;
 
     // Default title when none is provided
     const defaultTitle =

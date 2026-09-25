@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { executeWithCircuitBreaker, getSpruceFallbackResponse } from "@/lib/circuitBreaker";
 import { verifyHmacSignature } from "@/lib/crypto/signatures";
-import { checkRateLimit, getClientIp, getRateLimitHeaders } from "@/lib/security/ratelimit/tokenBucket";
+import { checkRateLimit, getRateLimitHeaders } from "@/lib/security/ratelimit/tokenBucket";
 import { CalcomWebhookSchema, hasPrototypePollution, MAX_PAYLOAD_BYTES } from "@/lib/security/validation/schemas";
 
-export async function POST(req: NextRequest) {
-  const ip = getClientIp(req);
+export async function POST(request: NextRequest) {
+  const forwarded = request.headers.get("x-forwarded-for");
+  const ip = (forwarded ? forwarded.split(",")[0] : request.headers.get("x-real-ip"))?.trim() || "127.0.0.1";
   const rateLimit = checkRateLimit(ip, "webhook");
   const rlHeaders = getRateLimitHeaders(rateLimit);
 
@@ -17,7 +18,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const signature = req.headers.get("x-cal-signature-256");
+    const signature = request.headers.get("x-cal-signature-256");
     const secret = process.env.CALCOM_WEBHOOK_SECRET;
 
     // Fail closed: Webhook cannot accept events without an established verification secret
@@ -35,7 +36,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const rawBody = await req.text();
+    const rawBody = await request.text();
 
     const actualByteLength =
       typeof Buffer !== "undefined"
@@ -75,11 +76,17 @@ export async function POST(req: NextRequest) {
 
     const validation = CalcomWebhookSchema.safeParse(parsed);
     if (!validation.success) {
+      const formattedIssues = validation.error.issues.map((issue) => ({
+        path: issue.path.join("."),
+        message: issue.message,
+        code: issue.code,
+      }));
+
       return NextResponse.json(
         {
-          error: "Input validation failed.",
-          code: "VALIDATION_ERROR",
-          details: validation.error.issues,
+          error: "Validation failed",
+          code: "INVALID_PAYLOAD",
+          details: formattedIssues,
         },
         { status: 400, headers: rlHeaders }
       );

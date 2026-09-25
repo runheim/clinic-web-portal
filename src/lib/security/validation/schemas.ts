@@ -68,10 +68,12 @@ export type AssessmentInput = z.infer<typeof AssessmentSchema>;
 /**
  * Schema for inbound Cal.com webhook events.
  */
-export const CalcomWebhookSchema = z.object({
-  triggerEvent: z.string().max(100),
-  payload: z.record(z.string(), z.unknown()),
-});
+export const CalcomWebhookSchema = z
+  .object({
+    triggerEvent: z.string().max(100),
+    payload: z.record(z.string(), z.unknown()),
+  })
+  .strict();
 
 export type CalcomWebhookInput = z.infer<typeof CalcomWebhookSchema>;
 
@@ -81,6 +83,7 @@ export type CalcomWebhookInput = z.infer<typeof CalcomWebhookSchema>;
 export const OgQuerySchema = z
   .object({
     title: z.string().max(140).optional(),
+    description: z.string().max(160).optional(),
     category: z.string().max(80).optional(),
     subtitle: z.string().max(160).optional(),
     sig: z.string().max(128).optional(),
@@ -88,6 +91,35 @@ export const OgQuerySchema = z
   .strict();
 
 export type OgQueryInput = z.infer<typeof OgQuerySchema>;
+
+/**
+ * Schema for session token formatting validation (base64url payload . base64url signature).
+ */
+export const SessionTokenFormatSchema = z
+  .string()
+  .min(10)
+  .max(1024)
+  .regex(/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/, "Invalid session token format");
+
+export type SessionTokenFormatInput = z.infer<typeof SessionTokenFormatSchema>;
+
+/**
+ * Schema for Bearer authorization header.
+ */
+export const BearerHeaderSchema = z
+  .string()
+  .regex(/^Bearer\s+([A-Za-z0-9_-]+\.[A-Za-z0-9_-]+)$/i, "Invalid bearer token header format");
+
+/**
+ * Schema for session verification request payload.
+ */
+export const SessionRequestSchema = z
+  .object({
+    token: SessionTokenFormatSchema.optional(),
+  })
+  .strict();
+
+export type SessionRequestInput = z.infer<typeof SessionRequestSchema>;
 
 // ============================================================================
 // Prototype Pollution Detection
@@ -173,6 +205,40 @@ export type ParseValidationResult<T> =
       errorResponse: NextResponse<ValidationErrorResponse>;
       error: ValidationErrorResponse;
     };
+
+/**
+ * Sanitizes validation error message text, paths, and codes:
+ * - HTML-encodes entity delimiters to prevent XSS reflection
+ * - Strips non-printable ASCII control characters and null bytes
+ * - Redacts stack traces, internal paths, and database query keywords
+ */
+export function sanitizeValidationText(str: string): string {
+  if (!str || typeof str !== "string") {
+    return "";
+  }
+  return str
+    .replace(/[<>&"']/g, (c) => {
+      switch (c) {
+        case "<":
+          return "&lt;";
+        case ">":
+          return "&gt;";
+        case "&":
+          return "&amp;";
+        case '"':
+          return "&quot;";
+        case "'":
+          return "&#x27;";
+        default:
+          return c;
+      }
+    })
+    .replace(/[\x00-\x1F\x7F]/g, "")
+    .replace(/[a-zA-Z]:\\[^\s:]+:\d+:\d+/g, "[LOCAL_PATH]")
+    .replace(/\/[^\s:]+:\d+:\d+/g, "[LOCAL_PATH]")
+    .replace(/node:[^\s)]+/g, "[INTERNAL]")
+    .replace(/\b(SELECT|INSERT|UPDATE|DELETE|DROP|FROM|WHERE|TABLE|pg_|sqlite)\b/gi, "[REDACTED]");
+}
 
 /**
  * Reads, verifies size, checks for prototype pollution, parses JSON safely,
@@ -354,9 +420,9 @@ export async function parseAndValidateJson<T>(
   const validation = schema.safeParse(parsed);
   if (!validation.success) {
     const formattedIssues = validation.error.issues.map((issue) => ({
-      path: issue.path.join("."),
-      message: issue.message,
-      code: issue.code,
+      path: issue.path.map((p) => sanitizeValidationText(String(p))).join("."),
+      message: sanitizeValidationText(issue.message),
+      code: sanitizeValidationText(issue.code),
     }));
 
     const errorPayload: ValidationErrorResponse = {

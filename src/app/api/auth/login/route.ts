@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getMember, verifyPassword, createSessionToken } from "@/lib/auth/server";
-import { checkRateLimit, getClientIp, getRateLimitHeaders } from "@/lib/security/ratelimit/tokenBucket";
+import { checkRateLimit, getRateLimitHeaders } from "@/lib/security/ratelimit/tokenBucket";
 import { LoginSchema, parseAndValidateJson } from "@/lib/security/validation/schemas";
 
 export async function POST(request: NextRequest) {
-  const ip = getClientIp(request);
+  const forwarded = request.headers.get("x-forwarded-for");
+  const ip = (forwarded ? forwarded.split(",")[0] : request.headers.get("x-real-ip"))?.trim() || "127.0.0.1";
   const rateLimit = checkRateLimit(ip, "auth");
   const rlHeaders = getRateLimitHeaders(rateLimit);
 
@@ -23,7 +24,7 @@ export async function POST(request: NextRequest) {
     const validation = await parseAndValidateJson(request, LoginSchema);
     if (!validation.success) {
       const isMissingCreds =
-        validation.error.code === "VALIDATION_ERROR" &&
+        (validation.error.code === "VALIDATION_ERROR" || validation.error.code === "INVALID_PAYLOAD") &&
         Array.isArray(validation.error.details) &&
         validation.error.details.some(
           (d: { path: string }) => d.path === "password" || d.path === "email"

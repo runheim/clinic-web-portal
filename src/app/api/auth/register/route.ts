@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getMember, saveMember, hashPassword, createSessionToken } from "@/lib/auth/server";
-import { checkRateLimit, getClientIp, getRateLimitHeaders } from "@/lib/security/ratelimit/tokenBucket";
+import { checkRateLimit, getRateLimitHeaders } from "@/lib/security/ratelimit/tokenBucket";
 import { RegisterSchema, parseAndValidateJson } from "@/lib/security/validation/schemas";
 
 export async function POST(request: NextRequest) {
-  const ip = getClientIp(request);
+  const forwarded = request.headers.get("x-forwarded-for");
+  const ip = (forwarded ? forwarded.split(",")[0] : request.headers.get("x-real-ip"))?.trim() || "127.0.0.1";
   const rateLimit = checkRateLimit(ip, "auth");
   const rlHeaders = getRateLimitHeaders(rateLimit);
 
@@ -23,7 +24,10 @@ export async function POST(request: NextRequest) {
     const validation = await parseAndValidateJson(request, RegisterSchema);
     if (!validation.success) {
       let errorMessage = validation.error.error;
-      if (validation.error.code === "VALIDATION_ERROR" && Array.isArray(validation.error.details)) {
+      if (
+        (validation.error.code === "VALIDATION_ERROR" || validation.error.code === "INVALID_PAYLOAD") &&
+        Array.isArray(validation.error.details)
+      ) {
         const emailIssue = validation.error.details.find(
           (d: { path: string }) => d.path === "email"
         );

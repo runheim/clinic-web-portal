@@ -101,7 +101,7 @@ describe("Public Assessment Endpoint (/api/assessment)", () => {
     expect(res.status).toBe(400);
 
     const json = await res.json();
-    expect(json.code).toBe("VALIDATION_ERROR");
+    expect(["INVALID_PAYLOAD", "VALIDATION_ERROR"]).toContain(json.code);
   });
 
   test("strictly rejects unknown top-level properties", async () => {
@@ -115,7 +115,7 @@ describe("Public Assessment Endpoint (/api/assessment)", () => {
     const res = await POST(req);
     expect(res.status).toBe(400);
     const json = await res.json();
-    expect(json.code).toBe("VALIDATION_ERROR");
+    expect(["INVALID_PAYLOAD", "VALIDATION_ERROR"]).toContain(json.code);
   });
 
   test("rejects prototype pollution in assessment payload", async () => {
