@@ -16,7 +16,6 @@ export interface OgCardOptions {
 }
 
 /** Default secret used for signing OG cards when environment secret is not configured */
-const DEFAULT_OG_SECRET = "";
 
 // Standard SHA-256 Round Constants
 const K256: readonly number[] = [

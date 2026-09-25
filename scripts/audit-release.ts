@@ -149,8 +149,15 @@ function runAudit(): void {
 
       for (const pattern of PHI_PATTERNS) {
         if (pattern.regex.test(line)) {
-          // Special exception: skip this audit script if scanning itself, and skip audit-report.json
-          if (relativePath.includes("scripts/audit-release.ts") || relativePath.includes("audit-report.json")) {
+          // Exceptions: skip audit script, report artifacts, test fixtures/assertions, and the PII scrubber engine
+          if (
+            relativePath.includes("scripts/audit-release.ts") ||
+            relativePath.includes("audit-report.json") ||
+            relativePath.includes("__tests__/") ||
+            relativePath.endsWith(".test.ts") ||
+            relativePath.endsWith(".test.tsx") ||
+            relativePath.includes("src/lib/observability/errorSanitizer.ts")
+          ) {
             continue;
           }
 
