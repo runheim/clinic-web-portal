@@ -1,10 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { executeWithCircuitBreaker, getSpruceFallbackResponse } from "@/lib/circuitBreaker";
 import { verifyHmacSignature } from "@/lib/crypto/signatures";
+import { checkRateLimit, getClientIp, getRateLimitHeaders } from "@/lib/security/ratelimit/tokenBucket";
+import { CalcomWebhookSchema, hasPrototypePollution, MAX_PAYLOAD_BYTES } from "@/lib/security/validation/schemas";
 
 export async function POST(req: NextRequest) {
+  const ip = getClientIp(req);
+  const rateLimit = checkRateLimit(ip, "webhook");
+  const rlHeaders = getRateLimitHeaders(rateLimit);
+
+  if (!rateLimit.allowed) {
+    return NextResponse.json(
+      { error: "Too many webhook requests. Please try again later." },
+      { status: 429, headers: rlHeaders }
+    );
+  }
+
   try {
-    const rawBody = await req.text();
     const signature = req.headers.get("x-cal-signature-256");
     const secret = process.env.CALCOM_WEBHOOK_SECRET;
 
@@ -12,45 +24,89 @@ export async function POST(req: NextRequest) {
     if (!secret) {
       return NextResponse.json(
         { error: "Cal.com webhook integration is unconfigured or disabled." },
-        { status: 503 }
+        { status: 503, headers: rlHeaders }
       );
     }
 
     if (!signature) {
       return NextResponse.json(
         { error: "Missing HMAC signature header" },
-        { status: 401 }
-      );
-    }
-    if (!verifyHmacSignature(rawBody, signature, secret)) {
-      return NextResponse.json(
-        { error: "Invalid HMAC signature" },
-        { status: 401 }
+        { status: 401, headers: rlHeaders }
       );
     }
 
-    const payload = JSON.parse(rawBody);
-    const eventType = payload.triggerEvent || payload.event;
+    const rawBody = await req.text();
+
+    const actualByteLength =
+      typeof Buffer !== "undefined"
+        ? Buffer.byteLength(rawBody, "utf8")
+        : new TextEncoder().encode(rawBody).byteLength;
+
+    if (actualByteLength > MAX_PAYLOAD_BYTES) {
+      return NextResponse.json(
+        { error: "Payload exceeds maximum allowed limit of 64KB.", code: "PAYLOAD_TOO_LARGE" },
+        { status: 413, headers: rlHeaders }
+      );
+    }
+
+    if (!verifyHmacSignature(rawBody, signature, secret)) {
+      return NextResponse.json(
+        { error: "Invalid HMAC signature" },
+        { status: 401, headers: rlHeaders }
+      );
+    }
+
+    if (hasPrototypePollution(rawBody)) {
+      return NextResponse.json(
+        { error: "Prototype pollution attempt rejected.", code: "PROTOTYPE_POLLUTION_DETECTED" },
+        { status: 400, headers: rlHeaders }
+      );
+    }
+
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(rawBody);
+    } catch {
+      return NextResponse.json(
+        { error: "Invalid JSON payload.", code: "INVALID_JSON" },
+        { status: 400, headers: rlHeaders }
+      );
+    }
+
+    const validation = CalcomWebhookSchema.safeParse(parsed);
+    if (!validation.success) {
+      return NextResponse.json(
+        {
+          error: "Input validation failed.",
+          code: "VALIDATION_ERROR",
+          details: validation.error.issues,
+        },
+        { status: 400, headers: rlHeaders }
+      );
+    }
+
+    const payload = validation.data;
+    const eventType = payload.triggerEvent;
 
     // We specifically handle BOOKING_CREATED events
     if (eventType !== "BOOKING_CREATED") {
       return NextResponse.json(
         { message: `Event ${eventType} acknowledged without action` },
-        { status: 200 }
+        { status: 200, headers: rlHeaders }
       );
     }
 
-    const bookingData = payload.payload || payload;
-    const attendees = bookingData.attendees || [];
-    const primaryAttendee = attendees[0] || {
-      name: bookingData.name,
-      email: bookingData.email,
+    const bookingData = (payload.payload as Record<string, unknown>) || payload;
+    const attendees = (bookingData.attendees as Array<Record<string, unknown>>) || [];
+    const primaryAttendee = (attendees[0] as { name?: string; email?: string; phoneNumber?: string } | undefined) || {
+      name: typeof bookingData.name === "string" ? bookingData.name : undefined,
+      email: typeof bookingData.email === "string" ? bookingData.email : undefined,
     };
 
     if (!primaryAttendee?.email) {
       return NextResponse.json(
         { error: "Missing attendee email in webhook payload" },
-        { status: 400 }
+        { status: 400, headers: rlHeaders }
       );
     }
 
@@ -119,17 +175,20 @@ export async function POST(req: NextRequest) {
       spruceResponseData = breakerResult.data as Record<string, unknown>;
     }
 
-    return NextResponse.json({
-      status: "success",
-      event: "BOOKING_CREATED",
-      spruceRelayStatus: spruceStatus,
-      candidate: {
-        name: primaryAttendee.name,
-        email: primaryAttendee.email,
-        startTime: bookingData.startTime,
+    return NextResponse.json(
+      {
+        status: "success",
+        event: "BOOKING_CREATED",
+        spruceRelayStatus: spruceStatus,
+        candidate: {
+          name: primaryAttendee.name,
+          email: primaryAttendee.email,
+          startTime: bookingData.startTime,
+        },
+        spruceResponse: spruceResponseData,
       },
-      spruceResponse: spruceResponseData,
-    });
+      { status: 200, headers: rlHeaders }
+    );
   } catch (error) {
     console.error("Error processing Cal.com webhook:", error);
     return NextResponse.json(
@@ -137,7 +196,7 @@ export async function POST(req: NextRequest) {
         error: "Internal webhook processing error",
         details: error instanceof Error ? error.message : String(error),
       },
-      { status: 500 }
+      { status: 500, headers: rlHeaders }
     );
   }
 }

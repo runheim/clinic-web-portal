@@ -1,18 +1,18 @@
 {
-  "timestamp": "2026-09-25T02:44:36.003Z",
+  "timestamp": "2026-09-25T03:00:10.866Z",
   "status": "PASSED",
-  "scannedFilesCount": 156,
+  "scannedFilesCount": 159,
   "violationsCount": 0,
   "violations": [],
   "checks": {
     "zeroEphi": {
       "passed": true,
-      "scannedFiles": 128,
+      "scannedFiles": 131,
       "violations": []
     },
     "secretsHygiene": {
       "passed": true,
-      "scannedFiles": 121,
+      "scannedFiles": 123,
       "violations": []
     },
     "securityHeaders": {

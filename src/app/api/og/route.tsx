@@ -1,5 +1,7 @@
 import { NextRequest } from "next/server";
 import { canvasRenderer, verifyOgSignature } from "@/lib/og/canvasRenderer";
+import { checkRateLimit, getClientIp, getRateLimitHeaders } from "@/lib/security/ratelimit/tokenBucket";
+import { hasPrototypePollution, OgQuerySchema } from "@/lib/security/validation/schemas";
 
 export const runtime = "edge";
 
@@ -14,8 +16,70 @@ export const runtime = "edge";
  * - sig (string, optional): HMAC-SHA256 signature to verify parameter integrity.
  */
 export async function GET(req: NextRequest): Promise<Response> {
+  const ip = getClientIp(req);
+  const rateLimit = checkRateLimit(ip, "default");
+  const rlHeaders = getRateLimitHeaders(rateLimit);
+
+  if (!rateLimit.allowed) {
+    return new Response(
+      JSON.stringify({
+        error: "Too many requests. Please try again later.",
+        code: "RATE_LIMITED",
+      }),
+      {
+        status: 429,
+        headers: {
+          "content-type": "application/json",
+          "cache-control": "no-store",
+          ...rlHeaders,
+        },
+      }
+    );
+  }
+
   try {
     const { searchParams } = new URL(req.url);
+
+    const rawParams: Record<string, string> = {};
+    searchParams.forEach((value, key) => {
+      rawParams[key] = value;
+    });
+
+    if (hasPrototypePollution(rawParams)) {
+      return new Response(
+        JSON.stringify({
+          error: "Prototype pollution attempt rejected.",
+          code: "PROTOTYPE_POLLUTION_DETECTED",
+        }),
+        {
+          status: 400,
+          headers: {
+            "content-type": "application/json",
+            "cache-control": "no-store",
+            ...rlHeaders,
+          },
+        }
+      );
+    }
+
+    const validation = OgQuerySchema.safeParse(rawParams);
+    if (!validation.success) {
+      return new Response(
+        JSON.stringify({
+          error: "Invalid query parameters.",
+          code: "VALIDATION_ERROR",
+          details: validation.error.issues,
+        }),
+        {
+          status: 400,
+          headers: {
+            "content-type": "application/json",
+            "cache-control": "no-store",
+            ...rlHeaders,
+          },
+        }
+      );
+    }
 
     const rawTitle = searchParams.get("title");
     const rawCategory = searchParams.get("category");
@@ -48,6 +112,7 @@ export async function GET(req: NextRequest): Promise<Response> {
               "content-type": "application/json",
               "cache-control": "no-store, max-age=0",
               "x-zero-ephi-quarantine": "enforced",
+              ...rlHeaders,
             },
           }
         );
@@ -65,11 +130,17 @@ export async function GET(req: NextRequest): Promise<Response> {
         ? rawSubtitle.slice(0, 160).trim()
         : "Discreet Concierge Neurology & Stoichiometric Neuro-Metabolic Resuscitation";
 
-    return canvasRenderer({
+    const response = canvasRenderer({
       title,
       category,
       subtitle,
     });
+
+    for (const [key, value] of Object.entries(rlHeaders)) {
+      response.headers.set(key, value);
+    }
+
+    return response;
   } catch {
     // Quarantine error details from leaking potential ePHI or internal stack traces
     return new Response(
@@ -82,6 +153,7 @@ export async function GET(req: NextRequest): Promise<Response> {
         headers: {
           "content-type": "application/json",
           "x-zero-ephi-quarantine": "enforced",
+          ...rlHeaders,
         },
       }
     );

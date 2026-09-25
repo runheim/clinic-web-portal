@@ -1,6 +1,7 @@
 import { POST } from "@/app/api/webhooks/calcom/route";
 import { NextRequest } from "next/server";
 import crypto from "crypto";
+import { resetRateLimits } from "@/lib/security/ratelimit/tokenBucket";
 
 describe("Cal.com to Spruce Health Webhook Relay (/api/webhooks/calcom)", () => {
   const secret = "test_webhook_secret_key_12345";
@@ -8,6 +9,7 @@ describe("Cal.com to Spruce Health Webhook Relay (/api/webhooks/calcom)", () => 
   const originalEnv = process.env;
 
   beforeEach(() => {
+    resetRateLimits();
     jest.resetModules();
     process.env = {
       ...originalEnv,

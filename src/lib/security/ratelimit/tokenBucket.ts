@@ -16,7 +16,16 @@
  * - Zero open handles: fully edge-runtime compatible, unref'd or lazy timer sweeps
  */
 
-export type RouteCategory = "webhook" | "auth" | "contact" | "default";
+import type { NextRequest } from "next/server";
+
+export type RouteCategory =
+  | "webhook"
+  | "auth"
+  | "session"
+  | "form"
+  | "contact"
+  | "default"
+  | "asset";
 
 export interface RateLimitConfig {
   /** Maximum burst capacity (tokens) */
@@ -82,10 +91,13 @@ interface BucketState {
  * Predefined default rate limit configurations per route category.
  */
 export const DEFAULT_LIMIT_CONFIGS: Record<RouteCategory, RateLimitConfig> = {
-  webhook: { capacity: 5, refillRatePerMinute: 5, windowMs: 60_000 },
   auth: { capacity: 10, refillRatePerMinute: 10, windowMs: 60_000 },
+  session: { capacity: 30, refillRatePerMinute: 30, windowMs: 60_000 },
+  form: { capacity: 5, refillRatePerMinute: 5, windowMs: 60_000 },
+  webhook: { capacity: 5, refillRatePerMinute: 5, windowMs: 60_000 },
   contact: { capacity: 5, refillRatePerMinute: 5, windowMs: 60_000 },
   default: { capacity: 60, refillRatePerMinute: 60, windowMs: 60_000 },
+  asset: { capacity: 60, refillRatePerMinute: 60, windowMs: 60_000 },
 };
 
 /** Stale bucket threshold: 1 hour of inactivity */
@@ -111,8 +123,11 @@ let backgroundTimer: ReturnType<typeof setInterval> | null = null;
 export function resolveRouteCategory(route?: string): RouteCategory {
   if (!route) return "default";
   const lower = route.toLowerCase();
+  if (lower === "asset" || lower.includes("asset")) return "asset";
   if (lower.includes("webhook")) return "webhook";
-  if (lower.includes("auth") || lower.includes("login") || lower.includes("session")) return "auth";
+  if (lower.includes("session") || lower.includes("logout")) return "session";
+  if (lower.includes("auth") || lower.includes("login") || lower.includes("register")) return "auth";
+  if (lower.includes("assessment") || lower.includes("form")) return "form";
   if (lower.includes("contact") || lower.includes("spruce")) return "contact";
   return "default";
 }
@@ -379,3 +394,36 @@ export function getRateLimitMetrics(): RateLimitMetrics {
     bucketsByRoute,
   };
 }
+
+/**
+ * Resolves the client IP address from request headers with standard fallbacks.
+ * Parses first IP from x-forwarded-for or x-real-ip, falling back to 127.0.0.1.
+ */
+export function getClientIp(request: NextRequest | Request): string {
+  const forwarded = request.headers.get("x-forwarded-for");
+  if (forwarded) {
+    const firstIp = forwarded.split(",")[0]?.trim();
+    if (firstIp) return firstIp;
+  }
+  const realIp = request.headers.get("x-real-ip")?.trim();
+  if (realIp) return realIp;
+  return "127.0.0.1";
+}
+
+/**
+ * Produces standard rate limit response headers (RFC 6585 / RFC 7231).
+ * Always includes X-RateLimit-Remaining and X-RateLimit-Reset; includes Retry-After on 429.
+ */
+export function getRateLimitHeaders(result: RateLimitResult): Record<string, string> {
+  const headers: Record<string, string> = {
+    "X-RateLimit-Remaining": String(result.remainingTokens),
+    "X-RateLimit-Reset": String(result.resetTime),
+  };
+
+  if (!result.allowed) {
+    headers["Retry-After"] = String(result.retryAfterSeconds ?? 1);
+  }
+
+  return headers;
+}
+

@@ -1,29 +1,62 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getMember, saveMember, hashPassword, createSessionToken } from "@/lib/auth/server";
+import { checkRateLimit, getClientIp, getRateLimitHeaders } from "@/lib/security/ratelimit/tokenBucket";
+import { RegisterSchema, parseAndValidateJson } from "@/lib/security/validation/schemas";
 
 export async function POST(request: NextRequest) {
+  const ip = getClientIp(request);
+  const rateLimit = checkRateLimit(ip, "auth");
+  const rlHeaders = getRateLimitHeaders(rateLimit);
+
+  if (!rateLimit.allowed) {
+    return NextResponse.json(
+      { error: "Too many registration attempts. Please try again later." },
+      {
+        status: 429,
+        headers: rlHeaders,
+      }
+    );
+  }
+
   try {
-    const body = await request.json().catch(() => null);
-    if (!body) {
-      return NextResponse.json({ error: "Invalid JSON payload." }, { status: 400 });
+    const validation = await parseAndValidateJson(request, RegisterSchema);
+    if (!validation.success) {
+      let errorMessage = validation.error.error;
+      if (validation.error.code === "VALIDATION_ERROR" && Array.isArray(validation.error.details)) {
+        const emailIssue = validation.error.details.find(
+          (d: { path: string }) => d.path === "email"
+        );
+        const passIssue = validation.error.details.find(
+          (d: { path: string }) => d.path === "password"
+        );
+        if (emailIssue) {
+          errorMessage = "Please provide a valid email address.";
+        } else if (passIssue) {
+          errorMessage = "Password must be at least 6 characters.";
+        }
+      }
+
+      return NextResponse.json(
+        {
+          error: errorMessage,
+          code: validation.error.code,
+          details: validation.error.details,
+        },
+        {
+          status: validation.errorResponse.status,
+          headers: rlHeaders,
+        }
+      );
     }
 
-    const { email, password } = body;
-
-    if (!email || typeof email !== "string" || !email.includes("@")) {
-      return NextResponse.json({ error: "Please provide a valid email address." }, { status: 400 });
-    }
-
-    if (!password || typeof password !== "string" || password.length < 6) {
-      return NextResponse.json({ error: "Password must be at least 6 characters." }, { status: 400 });
-    }
+    const { email, password } = validation.data;
 
     const existing = await getMember(email);
     if (existing) {
       return NextResponse.json(
         { error: "An account with this email already exists. Please sign in." },
-        { status: 409 }
+        { status: 409, headers: rlHeaders }
       );
     }
 
@@ -36,8 +69,11 @@ export async function POST(request: NextRequest) {
     });
 
     const token = createSessionToken(email);
-    const response = NextResponse.json({ success: true, email: email.toLowerCase().trim() });
-    
+    const response = NextResponse.json(
+      { success: true, email: email.toLowerCase().trim() },
+      { status: 200, headers: rlHeaders }
+    );
+
     response.cookies.set("clinic_session", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -47,9 +83,10 @@ export async function POST(request: NextRequest) {
     });
 
     return response;
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Internal registration error";
-    console.error("Registration error encountered:", err);
-    return NextResponse.json({ error: `Registration error: ${message}` }, { status: 500 });
+  } catch {
+    return NextResponse.json(
+      { error: "Registration service unavailable." },
+      { status: 500, headers: rlHeaders }
+    );
   }
 }
