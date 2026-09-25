@@ -26,8 +26,44 @@ const memoryStore: Map<string, MemberRecord> =
   globalThis.__CLINIC_MEMBERS_CACHE__ ?? new Map<string, MemberRecord>();
 globalThis.__CLINIC_MEMBERS_CACHE__ = memoryStore;
 
-function isNetlifyProduction(): boolean {
-  return Boolean(process.env.NETLIFY && process.env.NETLIFY_BLOBS_CONTEXT);
+/**
+ * Resolves the Netlify Blobs store for member persistence.
+ * Attempts:
+ * 1. Auto-injected Netlify Blobs context (Netlify Functions & Next.js Runtime).
+ * 2. Explicit siteID / token configuration (via NETLIFY_SITE_ID & NETLIFY_AUTH_TOKEN).
+ * 3. Standard getStore("members") in Netlify cloud environments.
+ * Returns null if Blobs environment is unconfigured (enabling local dev/test fallback).
+ */
+export function getMembersStore() {
+  try {
+    // 1. Automatic Netlify Blobs context injected by runtime
+    if (process.env.NETLIFY_BLOBS_CONTEXT) {
+      return getStore("members");
+    }
+
+    // 2. Explicit site credentials or API token fallback
+    const siteID =
+      process.env.NETLIFY_SITE_ID || process.env.SITE_ID || "17273c6e-100f-403d-b963-d879bf47d66b";
+    const token = process.env.NETLIFY_AUTH_TOKEN || process.env.NETLIFY_API_TOKEN;
+
+    if (siteID && token) {
+      return getStore({
+        name: "members",
+        siteID,
+        token,
+      });
+    }
+
+    // 3. Standard call when running in Netlify production
+    if (process.env.NETLIFY) {
+      return getStore("members");
+    }
+  } catch {
+    // Environment lacks Blobs configuration; gracefully fall back to local disk
+    return null;
+  }
+
+  return null;
 }
 
 function getLocalStorePath(): string {
@@ -66,15 +102,15 @@ function writeLocalFile(data: Record<string, MemberRecord>): void {
 export async function getMember(email: string): Promise<MemberRecord | null> {
   const normalized = email.toLowerCase().trim();
 
-  // 1. Fast memory cache
+  // 1. Fast in-memory process cache
   if (memoryStore.has(normalized)) {
     return memoryStore.get(normalized)!;
   }
 
   // 2. Netlify Blobs Cloud Store
-  if (isNetlifyProduction()) {
+  const store = getMembersStore();
+  if (store) {
     try {
-      const store = getStore("members");
       const record = await store.get(normalized, { type: "json" });
       if (record) {
         memoryStore.set(normalized, record as MemberRecord);
@@ -85,7 +121,7 @@ export async function getMember(email: string): Promise<MemberRecord | null> {
     }
   }
 
-  // 3. Local/Tmp Fallback
+  // 3. Local/Tmp Fallback (Development & Test suites)
   const diskData = readLocalFile();
   if (diskData[normalized]) {
     memoryStore.set(normalized, diskData[normalized]);
@@ -100,20 +136,24 @@ export async function saveMember(member: MemberRecord): Promise<void> {
   memoryStore.set(normalized, member);
 
   // 1. Netlify Blobs Cloud Store (Permanent cloud persistence)
-  if (isNetlifyProduction()) {
+  const store = getMembersStore();
+  let savedToBlobs = false;
+
+  if (store) {
     try {
-      const store = getStore("members");
       await store.setJSON(normalized, member);
-      return;
+      savedToBlobs = true;
     } catch (err) {
       console.warn("Notice: Netlify Blobs write failed, saving to local fallback:", err);
     }
   }
 
-  // 2. Local fallback for development and testing
-  const diskData = readLocalFile();
-  diskData[normalized] = member;
-  writeLocalFile(diskData);
+  // 2. Local fallback for development and test suites, or if Blobs write failed
+  if (!savedToBlobs || !process.env.NETLIFY) {
+    const diskData = readLocalFile();
+    diskData[normalized] = member;
+    writeLocalFile(diskData);
+  }
 }
 
 export function hashPassword(password: string): { salt: string; hash: string } {
@@ -171,4 +211,45 @@ export function verifySessionToken(token: string): { email: string } | null {
   } catch {
     return null;
   }
+}
+
+/**
+ * Diagnostic utility to probe storage layer connectivity and configuration
+ */
+export async function diagnoseStorageEngine(): Promise<{
+  engine: "netlify-blobs" | "local-disk";
+  blobsConnected: boolean;
+  storeName: string;
+  hasAutoContext: boolean;
+  siteId: string | null;
+  hasAuthToken: boolean;
+  isNetlifyEnv: boolean;
+}> {
+  const hasAutoContext = Boolean(process.env.NETLIFY_BLOBS_CONTEXT);
+  const siteId =
+    process.env.NETLIFY_SITE_ID || process.env.SITE_ID || (process.env.NETLIFY ? "17273c6e-100f-403d-b963-d879bf47d66b" : null);
+  const hasAuthToken = Boolean(process.env.NETLIFY_AUTH_TOKEN || process.env.NETLIFY_API_TOKEN);
+  const isNetlifyEnv = Boolean(process.env.NETLIFY);
+
+  const store = getMembersStore();
+  let blobsConnected = false;
+
+  if (store) {
+    try {
+      await store.get("__probe_ping__", { type: "text" });
+      blobsConnected = true;
+    } catch {
+      blobsConnected = false;
+    }
+  }
+
+  return {
+    engine: blobsConnected ? "netlify-blobs" : "local-disk",
+    blobsConnected,
+    storeName: "members",
+    hasAutoContext,
+    siteId,
+    hasAuthToken,
+    isNetlifyEnv,
+  };
 }
