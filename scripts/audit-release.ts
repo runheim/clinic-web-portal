@@ -68,6 +68,23 @@ const REQUIRED_SECURITY_HEADERS = [
   "Strict-Transport-Security",
 ];
 
+/**
+ * Excludes test files, sanitizer engines, audit scripts, and reports from Zero-ePHI scanning
+ * to eliminate false-positive violations from negative assertions or regex patterns.
+ */
+function isZeroEphiExcluded(filePath: string): boolean {
+  const normalized = filePath.replace(/\\/g, "/");
+  return (
+    normalized.includes("scripts/audit-release.ts") ||
+    normalized.includes("audit-report.json") ||
+    normalized.includes("__tests__/") ||
+    normalized.includes("__tests__") ||
+    /\.test\.ts/i.test(normalized) ||
+    /\.spec\.ts/i.test(normalized) ||
+    normalized.includes("src/lib/observability/errorSanitizer.ts")
+  );
+}
+
 function getAllFiles(dir: string, fileList: string[] = []): string[] {
   if (!fs.existsSync(dir)) return fileList;
   const entries = fs.readdirSync(dir, { withFileTypes: true });
@@ -140,8 +157,16 @@ function runAudit(): void {
   console.log(`[1/3] Scanning ${targetSourceFiles.length} source & data files for prohibited ePHI tokens...`);
 
   for (const file of targetSourceFiles) {
-    const content = fs.readFileSync(file, "utf8");
     const relativePath = path.relative(ROOT_DIR, file).replace(/\\/g, "/");
+
+    // Exceptions: skip test files (__tests__/, *.test.ts*, *.spec.ts*), sanitizer engines
+    // (src/lib/observability/errorSanitizer.ts), and audit manifests from triggering false positives
+    // on negative assertions or regex patterns
+    if (isZeroEphiExcluded(relativePath)) {
+      continue;
+    }
+
+    const content = fs.readFileSync(file, "utf8");
     const lines = content.split(/\r?\n/);
 
     for (let i = 0; i < lines.length; i++) {
@@ -149,15 +174,7 @@ function runAudit(): void {
 
       for (const pattern of PHI_PATTERNS) {
         if (pattern.regex.test(line)) {
-          // Exceptions: skip audit script, report artifacts, test fixtures/assertions, and the PII scrubber engine
-          if (
-            relativePath.includes("scripts/audit-release.ts") ||
-            relativePath.includes("audit-report.json") ||
-            relativePath.includes("__tests__/") ||
-            relativePath.endsWith(".test.ts") ||
-            relativePath.endsWith(".test.tsx") ||
-            relativePath.includes("src/lib/observability/errorSanitizer.ts")
-          ) {
+          if (isZeroEphiExcluded(relativePath)) {
             continue;
           }
 

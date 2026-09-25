@@ -63,7 +63,8 @@ describe("Subagent Beta: Sanctuary Gateway & Maintenance Suite", () => {
       }
     });
 
-    test("Rewrites to /maintenance when edge header 'x-clinic-maintenance: 1' is present even if env is false", () => {
+    test("Rewrites to /maintenance when edge header 'x-clinic-maintenance: 1' is present in non-production", () => {
+      (process.env as Record<string, string | undefined>).NODE_ENV = "development";
       process.env.MAINTENANCE_MODE = "false";
 
       const req = createMockRequest("/services/neuromodulation", {
@@ -74,6 +75,60 @@ describe("Subagent Beta: Sanctuary Gateway & Maintenance Suite", () => {
       expect(res.headers.get("x-clinic-maintenance-active")).toBe("1");
       expect(res.headers.get("Cache-Control")).toBe("no-store, max-age=0");
       expect(res.headers.get("x-middleware-rewrite")).toBe("https://cognitiveedgeclinic.com/maintenance");
+    });
+
+    test("Production lockdown: ignores client-supplied 'x-clinic-maintenance: 1' when NODE_ENV === 'production'", () => {
+      (process.env as Record<string, string | undefined>).NODE_ENV = "production";
+      process.env.MAINTENANCE_MODE = "false";
+
+      const req = createMockRequest("/services/neuromodulation", {
+        "x-clinic-maintenance": "1",
+      });
+      const res = middleware(req);
+
+      // In production, client header must be ignored and request allowed through
+      expect(res.headers.get("x-clinic-maintenance-active")).toBeNull();
+      expect(res.headers.get("x-middleware-rewrite")).toBeNull();
+    });
+
+    test("Production lockdown: global maintenance triggers exclusively via server-side process.env.MAINTENANCE_MODE === 'true'", () => {
+      (process.env as Record<string, string | undefined>).NODE_ENV = "production";
+      process.env.MAINTENANCE_MODE = "true";
+
+      const req = createMockRequest("/services/neuromodulation");
+      const res = middleware(req);
+
+      expect(res.headers.get("x-clinic-maintenance-active")).toBe("1");
+      expect(res.headers.get("Cache-Control")).toBe("no-store, max-age=0");
+      expect(res.headers.get("x-middleware-rewrite")).toBe("https://cognitiveedgeclinic.com/maintenance");
+    });
+
+    test("Production lockdown: client cannot bypass maintenance in production via headers", () => {
+      (process.env as Record<string, string | undefined>).NODE_ENV = "production";
+      process.env.MAINTENANCE_MODE = "true";
+
+      const req = createMockRequest("/services/neuromodulation", {
+        "x-clinic-maintenance-bypass": "1",
+      });
+      const res = middleware(req);
+
+      // In production, client bypass header is ignored; server maintenance mode remains active
+      expect(res.headers.get("x-clinic-maintenance-active")).toBe("1");
+      expect(res.headers.get("Cache-Control")).toBe("no-store, max-age=0");
+      expect(res.headers.get("x-middleware-rewrite")).toBe("https://cognitiveedgeclinic.com/maintenance");
+    });
+
+    test("Non-production: client-supplied bypass header can bypass maintenance in non-production", () => {
+      (process.env as Record<string, string | undefined>).NODE_ENV = "development";
+      process.env.MAINTENANCE_MODE = "true";
+
+      const req = createMockRequest("/services/neuromodulation", {
+        "x-clinic-maintenance-bypass": "1",
+      });
+      const res = middleware(req);
+
+      expect(res.headers.get("x-clinic-maintenance-active")).toBeNull();
+      expect(res.headers.get("x-middleware-rewrite")).toBeNull();
     });
 
     test("Allows normal traffic when maintenance is inactive and header is missing", () => {

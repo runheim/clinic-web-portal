@@ -23,12 +23,20 @@ export function proxy(request: NextRequest) {
   );
 
   // Check Maintenance Mode triggers:
-  // 1. Environment variable MAINTENANCE_MODE === "true"
-  // 2. Request header x-clinic-maintenance === "1"
+  // 1. In production (NODE_ENV === "production"), global maintenance mode triggers
+  //    EXCLUSIVELY via server-side process.env.MAINTENANCE_MODE === "true".
+  // 2. Client-supplied maintenance headers (e.g. x-clinic-maintenance: "1",
+  //    x-clinic-maintenance-bypass: "1") are strictly restricted to non-production environments.
+  const isNonProduction = process.env.NODE_ENV !== "production";
+  const isClientBypass =
+    isNonProduction &&
+    (request.headers.get("x-clinic-maintenance-bypass") === "1" ||
+      request.headers.get("x-clinic-bypass") === "1");
+
   const isMaintenanceMode =
-    process.env.MAINTENANCE_MODE === "true" ||
-    (process.env.NODE_ENV !== "production" &&
-      request.headers.get("x-clinic-maintenance") === "1");
+    (process.env.MAINTENANCE_MODE === "true" ||
+      (isNonProduction && request.headers.get("x-clinic-maintenance") === "1")) &&
+    !isClientBypass;
 
   if (isMaintenanceMode && !isBypassed) {
     const maintenanceUrl = new URL("/maintenance", request.url);

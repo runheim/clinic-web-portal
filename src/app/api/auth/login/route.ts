@@ -6,7 +6,9 @@ import { checkRateLimit } from "@/lib/security/ratelimit/tokenBucket";
 export async function POST(request: NextRequest) {
   try {
     const forwarded = request.headers.get("x-forwarded-for");
-    const ip = (forwarded ? forwarded.split(",")[0] : request.headers.get("x-real-ip"))?.trim() || "127.0.0.1";
+    const clientIpFromForwarded = forwarded ? forwarded.split(",")[0]?.trim() : null;
+    const clientIpFromReal = request.headers.get("x-real-ip")?.trim();
+    const ip = clientIpFromForwarded || clientIpFromReal || "127.0.0.1";
 
     const rateLimit = checkRateLimit(ip, "/api/auth/login");
     if (!rateLimit.allowed) {

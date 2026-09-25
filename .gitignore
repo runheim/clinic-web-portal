@@ -48,3 +48,4 @@ next-env.d.ts
 # Local member store and data dumps
 .data/
 *.edgevault
+*.edgevault.json

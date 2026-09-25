@@ -159,4 +159,48 @@ describe("Cal.com to Spruce Health Webhook Relay (/api/webhooks/calcom)", () => 
     expect(json.spruceRelayStatus).toBe("failed");
     expect(json.spruceResponse.statusText).toBe("Bad Gateway");
   });
+
+  // TEST CASE 5: Unset CALCOM_WEBHOOK_SECRET fails closed with HTTP 503
+  test("Test Case 5: Rejection with HTTP 503 when CALCOM_WEBHOOK_SECRET is unconfigured", async () => {
+    delete process.env.CALCOM_WEBHOOK_SECRET;
+
+    const bookingPayload = {
+      triggerEvent: "BOOKING_CREATED",
+      payload: {
+        attendees: [{ name: "Test Candidate", email: "candidate@example.com" }],
+      },
+    };
+
+    const req = createSignedRequest(bookingPayload);
+    const res = await POST(req);
+    const json = await res.json();
+
+    expect(res.status).toBe(503);
+    expect(json.error).toContain("unconfigured or disabled");
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  // TEST CASE 6: Missing signature header returns HTTP 401
+  test("Test Case 6: Missing x-cal-signature-256 header returns HTTP 401", async () => {
+    const rawBody = JSON.stringify({
+      triggerEvent: "BOOKING_CREATED",
+      payload: { attendees: [{ name: "No Sig", email: "nosig@example.com" }] },
+    });
+
+    const req = new NextRequest("http://localhost:3000/api/webhooks/calcom", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: rawBody,
+    });
+
+    const res = await POST(req);
+    const json = await res.json();
+
+    expect(res.status).toBe(401);
+    expect(json.error).toContain("Missing HMAC signature header");
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
 });
+

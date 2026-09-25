@@ -123,18 +123,24 @@ export function hashPassword(password: string): { salt: string; hash: string } {
 }
 
 export function verifyPassword(password: string, salt: string, hash: string): boolean {
+  if (!password || !salt || !hash) {
+    return false;
+  }
   try {
-    const candidate = crypto.scryptSync(password, salt, 64).toString("hex");
-    return crypto.timingSafeEqual(Buffer.from(candidate, "hex"), Buffer.from(hash, "hex"));
+    const candidateBuf = crypto.scryptSync(password, salt, 64);
+    const hashBuf = Buffer.from(hash, "hex");
+    if (candidateBuf.length !== hashBuf.length) {
+      return false;
+    }
+    return crypto.timingSafeEqual(candidateBuf, hashBuf);
   } catch {
     return false;
   }
 }
 
-const AUTH_SECRET = process.env.CLINIC_AUTH_SECRET;
-
 export function createSessionToken(email: string): string {
-  if (!AUTH_SECRET) {
+  const secret = process.env.CLINIC_AUTH_SECRET;
+  if (!secret) {
     throw new Error("CLINIC_AUTH_SECRET must be configured in environment.");
   }
   const payload = Buffer.from(
@@ -143,16 +149,17 @@ export function createSessionToken(email: string): string {
       exp: Date.now() + 1000 * 60 * 60 * 24 * 30, // 30-day session
     })
   ).toString("base64url");
-  const signature = crypto.createHmac("sha256", AUTH_SECRET).update(payload).digest("base64url");
+  const signature = crypto.createHmac("sha256", secret).update(payload).digest("base64url");
   return `${payload}.${signature}`;
 }
 
 export function verifySessionToken(token: string): { email: string } | null {
   try {
+    const secret = process.env.CLINIC_AUTH_SECRET;
+    if (!secret) return null;
     const [payloadB64, signature] = token.split(".");
     if (!payloadB64 || !signature) return null;
-    if (!AUTH_SECRET) return null;
-    const expectedSig = crypto.createHmac("sha256", AUTH_SECRET).update(payloadB64).digest("base64url");
+    const expectedSig = crypto.createHmac("sha256", secret).update(payloadB64).digest("base64url");
     const sigBuf = Buffer.from(signature, "utf8");
     const expBuf = Buffer.from(expectedSig, "utf8");
     if (sigBuf.length !== expBuf.length || !crypto.timingSafeEqual(sigBuf, expBuf)) {

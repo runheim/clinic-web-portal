@@ -15,8 +15,6 @@ export interface OgCardOptions {
   badge?: string;
 }
 
-/** Default secret used for signing OG cards when environment secret is not configured */
-
 // Standard SHA-256 Round Constants
 const K256: readonly number[] = [
   0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1,
@@ -136,7 +134,7 @@ function computeSha256(data: Uint8Array): Uint8Array<ArrayBuffer> {
  * Computes an HMAC-SHA256 hex digest using Edge-compatible pure TypeScript algorithms.
  *
  * @param title - The card title or payload string to sign.
- * @param secret - Optional secret key. Defaults to OG_SIGNING_SECRET env var or fallback.
+ * @param secret - Optional secret key. Defaults to OG_SIGNING_SECRET or AUTH_SECRET env var.
  * @returns 64-character lowercase hexadecimal HMAC-SHA256 signature digest.
  */
 export function generateOgSignature(title: string, secret?: string): string {

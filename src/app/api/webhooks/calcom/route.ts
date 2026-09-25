@@ -16,19 +16,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
-      if (!signature) {
-        return NextResponse.json(
-          { error: "Missing HMAC signature header" },
-          { status: 401 }
-        );
-      }
-      if (!verifyHmacSignature(rawBody, signature, secret)) {
-        return NextResponse.json(
-          { error: "Invalid HMAC signature" },
-          { status: 401 }
-        );
-      }
-
+    if (!signature) {
+      return NextResponse.json(
+        { error: "Missing HMAC signature header" },
+        { status: 401 }
+      );
+    }
+    if (!verifyHmacSignature(rawBody, signature, secret)) {
+      return NextResponse.json(
+        { error: "Invalid HMAC signature" },
+        { status: 401 }
+      );
+    }
 
     const payload = JSON.parse(rawBody);
     const eventType = payload.triggerEvent || payload.event;
