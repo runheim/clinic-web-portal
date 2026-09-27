@@ -84,15 +84,15 @@ export default function MembershipSuitePage() {
             </div>
 
             <div className="pt-6 border-t border-border-midnight space-y-3">
-              <button
-                type="button"
-                onClick={() => setIsBookingOpen(true)}
-                className="w-full py-3.5 px-6 rounded-full bg-surface-midnight hover:bg-canvas-obsidian text-text-surface border border-border-gold-subtle hover:border-champagne-gold font-mono text-xs font-bold uppercase tracking-wider transition-all shadow-inner"
+              <Link
+                href="/consultation"
+                className="w-full py-3.5 px-6 rounded-full bg-surface-midnight hover:bg-canvas-obsidian text-text-surface border border-border-gold-subtle hover:border-champagne-gold font-mono text-xs font-bold uppercase tracking-wider transition-all shadow-inner flex items-center justify-center gap-2"
               >
-                Apply for Cognitive Edge
-              </button>
+                <span>Schedule a Free Consultation</span>
+                <span>&rarr;</span>
+              </Link>
               <p className="text-center font-mono text-[10px] text-text-surface-muted">
-                Standard Consultation &bull; Diagnostic Deposit Required
+                Free Consultation &bull; Clinical Coordinator Triage
               </p>
             </div>
           </div>
@@ -141,15 +141,15 @@ export default function MembershipSuitePage() {
             </div>
 
             <div className="pt-6 border-t border-border-midnight space-y-3">
-              <button
-                type="button"
-                onClick={() => setIsBookingOpen(true)}
-                className="w-full py-3.5 px-6 rounded-full bg-surface-midnight hover:bg-canvas-obsidian text-champagne-gold border border-champagne-gold/60 hover:border-champagne-gold font-mono text-xs font-bold uppercase tracking-wider transition-all shadow-inner"
+              <Link
+                href="/consultation"
+                className="w-full py-3.5 px-6 rounded-full bg-surface-midnight hover:bg-canvas-obsidian text-champagne-gold border border-champagne-gold/60 hover:border-champagne-gold font-mono text-xs font-bold uppercase tracking-wider transition-all shadow-inner flex items-center justify-center gap-2"
               >
-                Request Performance Tier
-              </button>
+                <span>Schedule a Free Consultation</span>
+                <span>&rarr;</span>
+              </Link>
               <p className="text-center font-mono text-[10px] text-text-surface-muted">
-                Fast-Track Intake &bull; Full Modality Evaluation
+                Free Consultation &bull; Full Modality Evaluation
               </p>
             </div>
           </div>
@@ -202,13 +202,13 @@ export default function MembershipSuitePage() {
             </div>
 
             <div className="pt-6 border-t border-champagne-gold/30 space-y-3 relative z-10">
-              <button
-                type="button"
-                onClick={() => setIsBookingOpen(true)}
-                className="w-full py-4 px-6 rounded-full bg-champagne-gold hover:bg-champagne-gold-light text-text-on-gold font-mono text-xs font-bold uppercase tracking-wider transition-all shadow-[0_0_25px_rgba(212,175,55,0.4)] hover:shadow-[0_0_35px_rgba(212,175,55,0.6)] btn-luxury-shimmer"
+              <Link
+                href="/consultation"
+                className="w-full py-4 px-6 rounded-full bg-champagne-gold hover:bg-champagne-gold-light text-text-on-gold font-mono text-xs font-bold uppercase tracking-wider transition-all shadow-[0_0_25px_rgba(212,175,55,0.4)] hover:shadow-[0_0_35px_rgba(212,175,55,0.6)] btn-luxury-shimmer flex items-center justify-center gap-2"
               >
-                Inquire for Concierge VIP Access &rarr;
-              </button>
+                <span>Schedule a Free Consultation</span>
+                <span>&rarr;</span>
+              </Link>
               <p className="text-center font-mono text-[10px] text-champagne-gold-light">
                 Extremely Limited Cohort &bull; Direct Physician Interview
               </p>
@@ -375,18 +375,18 @@ export default function MembershipSuitePage() {
           </p>
 
           <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <button
-              type="button"
-              onClick={() => setIsBookingOpen(true)}
-              className="w-full sm:w-auto px-8 py-4 rounded-full bg-champagne-gold hover:bg-champagne-gold-light text-text-on-gold font-mono text-xs font-bold uppercase tracking-wider transition-all shadow-[0_0_25px_rgba(212,175,55,0.35)] hover:shadow-[0_0_35px_rgba(212,175,55,0.5)] btn-luxury-shimmer"
-            >
-              Schedule Initial Assessment &rarr;
-            </button>
             <Link
-              href="/assessment"
-              className="w-full sm:w-auto px-6 py-4 rounded-full bg-surface-midnight hover:bg-canvas-obsidian text-text-surface border border-border-midnight hover:border-champagne-gold font-mono text-xs uppercase tracking-wider transition-colors"
+              href="/consultation"
+              className="w-full sm:w-auto px-8 py-4 rounded-full bg-champagne-gold hover:bg-champagne-gold-light text-text-on-gold font-mono text-xs font-bold uppercase tracking-wider transition-all shadow-[0_0_25px_rgba(212,175,55,0.35)] hover:shadow-[0_0_35px_rgba(212,175,55,0.5)] btn-luxury-shimmer inline-flex items-center justify-center gap-2"
             >
-              Take Pre-Screening Assessment
+              <span>Schedule a Free Consultation</span>
+              <span>&rarr;</span>
+            </Link>
+            <Link
+              href="/services"
+              className="w-full sm:w-auto px-6 py-4 rounded-full bg-surface-midnight hover:bg-canvas-obsidian text-text-surface border border-border-midnight hover:border-champagne-gold font-mono text-xs uppercase tracking-wider transition-colors inline-flex items-center justify-center"
+            >
+              Explore Clinical Modalities
             </Link>
           </div>
         </section>

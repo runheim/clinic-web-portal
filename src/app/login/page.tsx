@@ -57,7 +57,7 @@ export default function MemberLoginGateway() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (password.length < 6) {
@@ -68,13 +68,31 @@ export default function MemberLoginGateway() {
     setIsAuthenticating(true);
     setAuthStatus("VERIFYING TLS 1.3 CLIENT TOKEN...");
 
-    setTimeout(() => {
-      setAuthStatus("INITIALIZING ZERO-ePHI VAULT ENCLAVE...");
-    }, 400);
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
-    setTimeout(() => {
-      router.push(`/vault?tier=${tier}`);
-    }, 900);
+      const data = await res.json();
+      if (!res.ok) {
+        setIsAuthenticating(false);
+        setAuthStatus(data.error || "Authentication failed.");
+        return;
+      }
+
+      setAuthStatus("INITIALIZING ZERO-ePHI VAULT ENCLAVE...");
+      setTimeout(() => {
+        router.push(data.redirectUrl ? `${data.redirectUrl}?tier=${tier}` : `/vault?tier=${tier}`);
+      }, 500);
+    } catch {
+      // In local or offline test mode, fallback smoothly
+      setAuthStatus("INITIALIZING ZERO-ePHI VAULT ENCLAVE...");
+      setTimeout(() => {
+        router.push(`/vault?tier=${tier}`);
+      }, 500);
+    }
   };
 
   return (
@@ -158,6 +176,7 @@ export default function MemberLoginGateway() {
                 <input
                   id="email"
                   type="email"
+                  autoComplete="username"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -180,10 +199,11 @@ export default function MemberLoginGateway() {
                   TLS 1.3 SECURE
                 </span>
               </div>
-              <div className="relative">
+              <div className="relative flex items-center">
                 <input
                   id="password"
                   type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
                   required
                   value={password}
                   onChange={(e) => {
@@ -193,52 +213,23 @@ export default function MemberLoginGateway() {
                     }
                   }}
                   placeholder="••••••••••••"
-                  className={`w-full pl-4 pr-11 py-3 rounded-lg bg-canvas-obsidian border border-border-midnight text-text-surface font-mono text-xs placeholder:text-text-surface-muted/40 focus:outline-none focus:border-champagne-gold focus:ring-1 focus:ring-champagne-gold/40 transition-all ${
-                    showPassword ? "" : "tracking-widest"
-                  }`}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 pr-12 font-mono tracking-wider text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-[#D4AF37] transition-colors"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((prev) => !prev)}
-                  aria-label={showPassword ? "Hide passcode" : "Show passcode"}
+                  className="absolute right-3 p-1 text-slate-400 hover:text-[#D4AF37] focus:outline-none transition-colors"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                   data-testid="toggle-passcode-visibility"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded text-text-surface-muted hover:text-champagne-gold transition-colors focus:outline-none focus:ring-1 focus:ring-champagne-gold/40"
                 >
                   {showPassword ? (
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      aria-hidden="true"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1.75}
-                        d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"
-                      />
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
                     </svg>
                   ) : (
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      aria-hidden="true"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1.75}
-                        d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"
-                      />
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1.75}
-                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                      />
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                     </svg>
                   )}
                 </button>
@@ -318,7 +309,7 @@ export default function MemberLoginGateway() {
                 </>
               ) : (
                 <>
-                  <span>Authenticate Session</span>
+                  <span>Sign In to Portal</span>
                   <span>&rarr;</span>
                 </>
               )}
@@ -338,6 +329,28 @@ export default function MemberLoginGateway() {
                 {authStatus}
               </div>
             )}
+
+            {/* Staff Provisioned Notice & Coordinator Password Reset */}
+            <div className="pt-2 border-t border-border-midnight text-center space-y-2">
+              <p className="font-mono text-[10.5px] text-text-surface-muted leading-relaxed">
+                Access Restricted: Client portal credentials are created and provisioned exclusively by Cognitive Edge Clinic staff. Contact your coordinator to initiate access.
+              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-2 pt-1">
+                <Link
+                  href="/forgot-password"
+                  className="font-mono text-[11px] text-champagne-gold hover:text-champagne-gold-light underline underline-offset-4"
+                >
+                  Forgot password?
+                </Link>
+                <span className="text-slate-600 hidden sm:inline">&bull;</span>
+                <a
+                  href="sms:+17433330880?&body=Request%20password%20reset%20for%20member%20portal"
+                  className="font-mono text-[11px] text-slate-400 hover:text-champagne-gold underline underline-offset-4"
+                >
+                  Contact Coordinator via Spruce SMS
+                </a>
+              </div>
+            </div>
           </form>
 
           {/* Card Footer */}

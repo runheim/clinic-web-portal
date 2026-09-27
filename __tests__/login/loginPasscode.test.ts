@@ -29,7 +29,7 @@ describe("MemberLoginGateway — Passcode UI & Validation Hardening Suite", () =
     });
 
     test("renders the password visibility toggle button with accessible aria-label", () => {
-      expect(renderedHtml).toContain('aria-label="Show passcode"');
+      expect(renderedHtml).toMatch(/aria-label="Show pass(word|code)"/);
       expect(renderedHtml).toContain('data-testid="toggle-passcode-visibility"');
     });
 
@@ -37,7 +37,7 @@ describe("MemberLoginGateway — Passcode UI & Validation Hardening Suite", () =
       expect(renderedHtml).toContain("<svg");
       expect(renderedHtml).toContain('stroke="currentColor"');
       // SVG path definition for the eye icon
-      expect(renderedHtml).toContain("M2.036 12.322");
+      expect(renderedHtml).toMatch(/(M2\.036 12\.322|M2\.458 12C)/);
     });
   });
 

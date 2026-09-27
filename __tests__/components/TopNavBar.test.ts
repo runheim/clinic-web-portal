@@ -42,15 +42,15 @@ describe("TopNavBar Component — Streamlined Navigation & Spacing Suite", () =>
   });
 
   describe("Right Actions & Portal Access Zone", () => {
-    test("renders Member Login, Client Portal, and Assessment CTA", () => {
-      expect(renderedHtml).toContain('href="/login"');
-      expect(renderedHtml).toContain("Member Login");
-
+    test("renders consolidated Member Portal link and strictly excludes separate Member Login and Assessment pill", () => {
       expect(renderedHtml).toContain('href="/vault"');
-      expect(renderedHtml).toContain("Client Portal");
+      expect(renderedHtml).toContain("Member Portal");
 
-      expect(renderedHtml).toContain('href="/assessment"');
-      expect(renderedHtml).toContain("Assessment");
+      expect(renderedHtml).not.toContain('href="/login"');
+      expect(renderedHtml).not.toContain("Member Login");
+
+      expect(renderedHtml).not.toContain('href="/assessment"');
+      expect(renderedHtml).not.toContain("Assessment");
     });
 
     test("strictly excludes the Command-K Search trigger and keyboard shortcut", () => {
@@ -65,7 +65,8 @@ describe("TopNavBar Component — Streamlined Navigation & Spacing Suite", () =>
     test("renders mobile menu container and controls with accessible ARIA tags", () => {
       expect(renderedHtml).toContain('id="mobile-menu"');
       expect(renderedHtml).toContain('aria-controls="mobile-menu"');
-      expect(renderedHtml).toContain("Initiate Assessment →");
+      expect(renderedHtml).toContain("Member Portal");
+      expect(renderedHtml).not.toContain("Initiate Assessment →");
     });
 
     test("mobile drawer strictly excludes Diagnostic Vault and search triggers", () => {

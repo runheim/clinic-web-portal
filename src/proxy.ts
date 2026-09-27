@@ -12,6 +12,8 @@ const BYPASS_PREFIXES = [
   "/robots.txt",
   "/sitemap.xml",
   "/api/health",
+  "/consultation",
+  "/api/consultation",
 ];
 
 export function proxy(request: NextRequest) {

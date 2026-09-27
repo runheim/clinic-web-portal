@@ -6,11 +6,12 @@ import { HeroVideo } from "../media/HeroVideo";
 
 export { HeroVideo };
 
-interface HeroSectionProps {
-  onOpenBooking: () => void;
+export interface HeroSectionProps {
+  onOpenBooking?: () => void;
 }
 
 export function HeroSection({ onOpenBooking }: HeroSectionProps) {
+  void onOpenBooking;
 
   return (
     <section
@@ -46,56 +47,45 @@ export function HeroSection({ onOpenBooking }: HeroSectionProps) {
       */}
       <div className="relative z-10 w-full max-w-[1280px] mx-auto px-6 lg:px-10 flex flex-col items-center text-center">
         {/* 
-          1. Pill Badge
-          Matches Figma [4:2647] "div.inline-flex" (w: 333px, h: 26px, rounded-full)
+          1. Pill Badge: Advanced Neuro-Cellular & Metabolic Longevity
         */}
         <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-surface-midnight border border-[#D4AF37]/30 shadow-[0_2px_12px_rgba(0,0,0,0.4)] mb-6 transition-all hover:border-champagne-gold/60">
           <span className="w-2 h-2 rounded-full bg-champagne-gold shadow-[0_0_8px_rgba(212,175,55,0.8)] animate-pulse" />
           <span className="font-mono text-[10px] sm:text-[11px] font-medium tracking-[0.12em] text-champagne-gold uppercase">
-            Bespoke Precision Neuro-Preservation
+            ● ADVANCED NEURO-CELLULAR &amp; METABOLIC LONGEVITY
           </span>
         </div>
 
         {/* 
-          2. Headline
-          Matches Figma [4:2654] "Restoring Autonomic Vitality & Cognitive Edge"
-          EB Garamond 64px, weight 400, line-height 110%, letter-spacing -2%
+          2. Headline (H1): Peak Cognitive Performance. Systemic Cellular Vitality.
         */}
-        <h1 className="max-w-[927px] font-display text-4xl sm:text-5xl lg:text-[64px] font-normal leading-[1.1] tracking-[-0.02em] text-text-surface">
-          Restoring Autonomic Vitality &amp; Cognitive Edge
+        <h1 className="max-w-[927px] font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-normal leading-[1.1] tracking-tight text-text-surface">
+          Peak Cognitive Performance. Systemic Cellular Vitality.
         </h1>
 
         {/* 
-          3. Subtitle
-          Matches Figma [4:2657] "Transcending conventional medicine..."
-          Hanken Grotesk 18px, weight 300, line-height 162.5%
+          3. Supporting Body Copy
         */}
-        <p className="mt-6 max-w-3xl font-body text-base sm:text-lg lg:text-[18px] font-light leading-[1.625] text-text-surface-variant">
-          Transcending conventional medicine through stoichiometric analysis and targeted
-          interventions. We architect personalized pathways to optimize neural performance
-          and mitigate biological friction for high-performing individuals.
+        <p className="mt-6 max-w-2xl mx-auto font-body text-base sm:text-lg leading-relaxed text-slate-300">
+          Integrating clinical neuromodulation, cellular peptide therapy, and precision metabolic medicine. We engineer personalized protocols to sharpen cognitive performance, restore physical vitality, and protect your neurological future across every decade of life.
         </p>
 
         {/* 
-          4. Action Cluster
-          Matches Figma [4:2658] (itemSpacing: 24px, items-center)
+          4. Twin Call-to-Action Buttons
         */}
-        <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-6">
-          {/* Primary CTA Button: Matches Figma [12:7] CTA_Button_Primary (223x49px, rounded-full, #d4af37) */}
-          <button
-            type="button"
-            onClick={onOpenBooking}
-            className="w-full sm:w-[223px] h-[49px] rounded-full bg-champagne-gold hover:bg-champagne-gold-light text-text-on-gold font-mono text-[12px] font-bold tracking-[0.1em] uppercase transition-all flex items-center justify-center shadow-[0_0_25px_rgba(212,175,55,0.3)] hover:shadow-[0_0_35px_rgba(212,175,55,0.5)] hover:scale-[1.02] active:scale-[0.98] btn-luxury-shimmer"
-          >
-            Initiate Assessment
-          </button>
-
-          {/* Secondary Link: Matches Figma [4:2661] a.font-label-caps (w: 209px, border-b 1px #d4af37 30%) */}
+        <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
           <Link
             href="/services"
-            className="inline-flex items-center justify-center h-[22px] border-b border-[#D4AF37]/30 pb-1 font-mono text-[12px] font-medium tracking-[0.1em] text-champagne-gold hover:text-champagne-gold-light transition-colors uppercase"
+            className="w-full sm:w-auto px-7 py-3.5 rounded-full bg-[#D4AF37] text-slate-950 font-medium hover:bg-[#bfa032] font-mono text-xs uppercase tracking-wider transition-all flex items-center justify-center shadow-[0_0_20px_rgba(212,175,55,0.3)] hover:shadow-[0_0_30px_rgba(212,175,55,0.5)] hover:scale-[1.02] active:scale-[0.98]"
           >
-            Explore Clinical Modalities &rarr;
+            Explore Clinical Protocols
+          </Link>
+
+          <Link
+            href="/consultation"
+            className="w-full sm:w-auto px-7 py-3.5 rounded-full border border-slate-700 hover:border-slate-500 text-white font-mono text-xs uppercase tracking-wider transition-colors flex items-center justify-center"
+          >
+            Schedule a Free Consultation
           </Link>
         </div>
 

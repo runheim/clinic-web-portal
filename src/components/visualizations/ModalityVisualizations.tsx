@@ -803,6 +803,252 @@ export function BDNFVisualization({ className = "" }: VisualizationProps) {
 }
 
 /**
+ * 8. Dementia Prevention & Expanded Cognitive Trajectory:
+ * Neural branching, synaptic reserve, and blood-brain barrier vascular architecture
+ * in gold and cyan wireframe telemetry.
+ */
+export function DementiaPreventionVisualization({ className = "" }: VisualizationProps) {
+  return (
+    <div
+      role="img"
+      aria-label="Neural Branching, Synaptic Reserve and Blood-Brain Barrier Vascular Architecture"
+      className={`relative overflow-hidden rounded-lg bg-canvas-obsidian/90 border border-border-gold-subtle ${className}`}
+    >
+      <span className="sr-only">
+        Scientific wireframe diagram illustrating blood-brain barrier vascular integrity and arborized neural branching. Depicts tight junction endothelial channels, astrocytic perivascular end-feet, branching dendritic synapses in champagne gold, and convective glymphatic clearance vectors in cyan.
+      </span>
+      <svg
+        viewBox="0 0 400 240"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
+        className="w-full h-full object-contain select-none"
+      >
+        <defs>
+          <radialGradient id="dementiaGlow" cx="45%" cy="50%" r="55%">
+            <stop offset="0%" stopColor="#00F0FF" stopOpacity="0.18" />
+            <stop offset="60%" stopColor="#D4AF37" stopOpacity="0.12" />
+            <stop offset="100%" stopColor="#0B0F19" stopOpacity="0" />
+          </radialGradient>
+          <linearGradient id="bbbGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#D4AF37" stopOpacity="0.8" />
+            <stop offset="50%" stopColor="#00F0FF" stopOpacity="0.9" />
+            <stop offset="100%" stopColor="#4E6B5E" stopOpacity="0.7" />
+          </linearGradient>
+        </defs>
+
+        <rect width="400" height="240" fill="url(#dementiaGlow)" />
+
+        {/* Coordinate Grid */}
+        <g stroke="#D4AF37" strokeOpacity="0.06" strokeWidth="0.5" strokeDasharray="3 3">
+          <line x1="60" y1="0" x2="60" y2="240" />
+          <line x1="140" y1="0" x2="140" y2="240" />
+          <line x1="220" y1="0" x2="220" y2="240" />
+          <line x1="300" y1="0" x2="300" y2="240" />
+          <line x1="380" y1="0" x2="380" y2="240" />
+          <line x1="0" y1="60" x2="400" y2="60" />
+          <line x1="0" y1="120" x2="400" y2="120" />
+          <line x1="0" y1="180" x2="400" y2="180" />
+        </g>
+
+        {/* Blood-Brain Barrier Capillary Lumen */}
+        <path
+          d="M 30 190 C 100 175, 200 205, 370 185"
+          stroke="url(#bbbGrad)"
+          strokeWidth="3"
+          strokeLinecap="round"
+        />
+        <path
+          d="M 30 215 C 100 200, 200 230, 370 210"
+          stroke="url(#bbbGrad)"
+          strokeWidth="2"
+          strokeOpacity="0.6"
+          strokeLinecap="round"
+        />
+
+        {/* Endothelial Tight Junctions */}
+        <rect x="90" y="180" width="6" height="15" rx="1.5" fill="#00F0FF" fillOpacity="0.8" />
+        <rect x="160" y="186" width="6" height="15" rx="1.5" fill="#D4AF37" fillOpacity="0.8" />
+        <rect x="230" y="192" width="6" height="15" rx="1.5" fill="#00F0FF" fillOpacity="0.8" />
+        <rect x="300" y="186" width="6" height="15" rx="1.5" fill="#F2CA50" fillOpacity="0.8" />
+
+        {/* Astrocytic Perivascular End-Feet */}
+        <path
+          d="M 93 180 C 85 155, 110 135, 140 125"
+          stroke="#4E6B5E"
+          strokeWidth="1.2"
+          strokeDasharray="2 2"
+        />
+        <path
+          d="M 233 192 C 225 160, 210 130, 190 105"
+          stroke="#4E6B5E"
+          strokeWidth="1.2"
+          strokeDasharray="2 2"
+        />
+
+        {/* Neural Arborization & Branching Dendritic Tree */}
+        <circle cx="170" cy="85" r="14" stroke="#D4AF37" strokeWidth="1.75" fill="#121826" />
+        <circle cx="170" cy="85" r="6" fill="#F2CA50" fillOpacity="0.6" />
+
+        <path d="M 160 74 C 145 55, 120 48, 90 40" stroke="#DFE2F1" strokeWidth="1.5" />
+        <path d="M 175 72 C 190 50, 215 42, 250 35" stroke="#DFE2F1" strokeWidth="1.5" />
+        <path d="M 183 90 C 220 90, 260 75, 310 65" stroke="#DFE2F1" strokeWidth="1.5" />
+        <path d="M 162 97 C 140 115, 115 130, 80 145" stroke="#DFE2F1" strokeWidth="1.5" />
+
+        <path d="M 120 48 C 110 32, 85 25, 65 20" stroke="#00F0FF" strokeWidth="1" />
+        <path d="M 120 48 C 130 30, 145 22, 160 16" stroke="#00F0FF" strokeWidth="1" />
+        <path d="M 215 42 C 230 25, 255 18, 280 15" stroke="#00F0FF" strokeWidth="1" />
+        <path d="M 260 75 C 285 70, 315 80, 340 75" stroke="#00F0FF" strokeWidth="1" />
+        <path d="M 115 130 C 95 138, 70 155, 50 160" stroke="#00F0FF" strokeWidth="1" />
+
+        {/* Synaptic Density Boutons */}
+        <circle cx="90" cy="40" r="3" fill="#D4AF37" />
+        <circle cx="65" cy="20" r="3" fill="#00F0FF" />
+        <circle cx="160" cy="16" r="3" fill="#D4AF37" />
+        <circle cx="250" cy="35" r="3.5" fill="#F2CA50" />
+        <circle cx="280" cy="15" r="3" fill="#00F0FF" />
+        <circle cx="310" cy="65" r="3" fill="#D4AF37" />
+        <circle cx="340" cy="75" r="3" fill="#00F0FF" />
+        <circle cx="80" cy="145" r="3.5" fill="#F2CA50" />
+
+        {/* Glymphatic Convective Clearance Streamlines */}
+        <g stroke="#00F0FF" strokeWidth="1" strokeDasharray="4 3" opacity="0.8">
+          <path d="M 40 110 C 100 100, 200 135, 360 120" />
+          <path d="M 60 130 C 130 120, 220 155, 370 140" />
+        </g>
+
+        {/* Telemetry Labels */}
+        <text x="25" y="32" fill="#D4AF37" fontSize="9" fontFamily="monospace" fontWeight="600">
+          FIG 2.1 // NEURO-LONGEVITY
+        </text>
+        <text x="25" y="44" fill="#00F0FF" fontSize="7.5" fontFamily="monospace">
+          SYNAPTIC RESERVE &bull; BBB VASCULAR INTEGRITY
+        </text>
+        <text x="375" y="215" fill="#4E6B5E" fontSize="8" fontFamily="monospace" textAnchor="end">
+          GLYMPHATIC CLEARANCE // ANTI-AMYLOID
+        </text>
+      </svg>
+    </div>
+  );
+}
+
+/**
+ * 9. Sexual Wellness & Advanced Hormone Optimization:
+ * Endocrine feedback loops, steady-state subcutaneous pellet diffusion,
+ * and vascular micro-perfusion in gold and cyan wireframe telemetry.
+ */
+export function HormoneOptimizationVisualization({ className = "" }: VisualizationProps) {
+  return (
+    <div
+      role="img"
+      aria-label="Endocrine Feedback Loops and Vascular Micro-Perfusion Diagram"
+      className={`relative overflow-hidden rounded-lg bg-canvas-obsidian/90 border border-border-gold-subtle ${className}`}
+    >
+      <span className="sr-only">
+        Scientific wireframe illustrating endocrine feedback regulation and microvascular perfusion. Displays subcutaneous hormone pellet steady-state dissolution matrix, endothelial nitric oxide synthase (eNOS) vasodilatory expansion, and nuclear androgen and estrogen receptor saturation.
+      </span>
+      <svg
+        viewBox="0 0 400 240"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
+        className="w-full h-full object-contain select-none"
+      >
+        <defs>
+          <radialGradient id="hormoneGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#D4AF37" stopOpacity="0.22" />
+            <stop offset="70%" stopColor="#00F0FF" stopOpacity="0.1" />
+            <stop offset="100%" stopColor="#0B0F19" stopOpacity="0" />
+          </radialGradient>
+          <linearGradient id="perfusionGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#D4AF37" />
+            <stop offset="50%" stopColor="#F2CA50" />
+            <stop offset="100%" stopColor="#00F0FF" />
+          </linearGradient>
+        </defs>
+
+        <rect width="400" height="240" fill="url(#hormoneGlow)" />
+
+        {/* Coordinate Grid */}
+        <g stroke="#D4AF37" strokeOpacity="0.06" strokeWidth="0.5" strokeDasharray="3 3">
+          <line x1="50" y1="0" x2="50" y2="240" />
+          <line x1="130" y1="0" x2="130" y2="240" />
+          <line x1="210" y1="0" x2="210" y2="240" />
+          <line x1="290" y1="0" x2="290" y2="240" />
+          <line x1="370" y1="0" x2="370" y2="240" />
+          <line x1="0" y1="60" x2="400" y2="60" />
+          <line x1="0" y1="120" x2="400" y2="120" />
+          <line x1="0" y1="180" x2="400" y2="180" />
+        </g>
+
+        {/* Endocrine Feedback Arc */}
+        <path
+          d="M 80 70 C 130 30, 270 30, 320 70"
+          stroke="#00F0FF"
+          strokeWidth="1.5"
+          strokeDasharray="4 3"
+        />
+        <path
+          d="M 320 70 C 350 110, 320 160, 270 170"
+          stroke="#00F0FF"
+          strokeWidth="1.5"
+          strokeDasharray="4 3"
+        />
+        <polygon points="320,70 310,65 315,75" fill="#00F0FF" />
+
+        {/* Subcutaneous Pellet Matrix */}
+        <g>
+          <rect x="50" y="90" width="55" height="30" rx="6" stroke="#D4AF37" strokeWidth="1.5" fill="#121826" />
+          <rect x="56" y="96" width="43" height="18" rx="3" stroke="#F2CA50" strokeWidth="1" strokeDasharray="2 2" fill="#0B0F19" />
+          <text x="77" y="108" fill="#D4AF37" fontSize="6.5" fontFamily="monospace" textAnchor="middle" fontWeight="bold">
+            BHRT PELLET
+          </text>
+          <circle cx="115" cy="100" r="2.5" fill="#D4AF37" />
+          <circle cx="125" cy="95" r="2" fill="#F2CA50" />
+          <circle cx="132" cy="110" r="2.5" fill="#00F0FF" />
+          <circle cx="145" cy="105" r="2" fill="#D4AF37" />
+        </g>
+
+        {/* Microvascular Perfusion Channel */}
+        <path
+          d="M 140 100 C 190 90, 240 120, 360 110"
+          stroke="url(#perfusionGrad)"
+          strokeWidth="3.5"
+          strokeLinecap="round"
+        />
+        <path
+          d="M 140 130 C 190 120, 240 150, 360 140"
+          stroke="url(#perfusionGrad)"
+          strokeWidth="2.5"
+          strokeOpacity="0.7"
+          strokeLinecap="round"
+        />
+
+        {/* eNOS Vasodilatory Pulse Waves */}
+        <path d="M 210 85 C 230 75, 260 75, 280 85" stroke="#00F0FF" strokeWidth="1" strokeDasharray="2 2" />
+        <path d="M 220 155 C 240 165, 270 165, 290 155" stroke="#00F0FF" strokeWidth="1" strokeDasharray="2 2" />
+
+        {/* Target Cell Nuclear Receptor Binding Complex */}
+        <circle cx="330" cy="85" r="16" stroke="#DFE2F1" strokeWidth="1.5" fill="#121826" />
+        <circle cx="330" cy="85" r="7" stroke="#D4AF37" strokeWidth="1.2" fill="#F2CA50" fillOpacity="0.4" />
+        <rect x="325" y="82" width="10" height="6" rx="1" fill="#00F0FF" />
+
+        {/* Telemetry Labels */}
+        <text x="25" y="32" fill="#D4AF37" fontSize="9" fontFamily="monospace" fontWeight="600">
+          FIG 4.1 // ENDOCRINE BHRT
+        </text>
+        <text x="25" y="44" fill="#00F0FF" fontSize="7.5" fontFamily="monospace">
+          STEADY-STATE PELLET PERFUSION &bull; eNOS FLUX
+        </text>
+        <text x="375" y="215" fill="#4E6B5E" fontSize="8" fontFamily="monospace" textAnchor="end">
+          ANDROGEN / ESTROGEN RECEPTOR SATURATION
+        </text>
+      </svg>
+    </div>
+  );
+}
+
+/**
  * Universal Modality Artwork Selector:
  * Automatically matches slug to the appropriate bespoke scientific diagram.
  */
@@ -815,18 +1061,31 @@ export function ModalityArtwork({
   variant?: "card" | "hero";
 }) {
   switch (slug) {
+    case "tms":
     case "tms-neuromodulation":
       return <TMSVisualization className={className} />;
+    case "dementia-prevention":
+    case "expanded-cognitive-trajectory":
+      return <DementiaPreventionVisualization className={className} />;
+    case "peptides":
     case "subcutaneous-peptides":
       return <PeptidesVisualization className={className} />;
+    case "hormone-optimization":
+    case "sexual-wellness-hormones":
+      return <HormoneOptimizationVisualization className={className} />;
+    case "emsella":
     case "btl-emsella-pelvic-core":
       return <EmsellaVisualization className={className} />;
-    case "cerebral-photobiomodulation":
-      return <PhotobiomodulationVisualization className={className} />;
+    case "glp1":
     case "glp1-metabolic-optimization":
       return <GLP1Visualization className={className} />;
+    case "photobiomodulation":
+    case "cerebral-photobiomodulation":
+      return <PhotobiomodulationVisualization className={className} />;
+    case "infusions":
     case "mitochondrial-bioenergetics":
       return <MitochondriaVisualization className={className} />;
+    case "nad-bdnf":
     case "bdnf-synaptic-preservation":
       return <BDNFVisualization className={className} />;
     default:

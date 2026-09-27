@@ -5,56 +5,10 @@ import Link from "next/link";
 import { TopNavBar } from "@/components/navigation/TopNavBar";
 import { HeroSection } from "@/components/marketing/HeroSection";
 import { BookingModal } from "@/components/marketing/BookingModal";
+import { TherapeuticProtocols } from "@/components/home/TherapeuticProtocols";
 
 export default function Home() {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
-
-  const [expandedPillar, setExpandedPillar] = useState<number | null>(null);
-
-  const pillars = [
-    {
-      num: "01",
-      title: "Precision Neuromodulation & BDNF",
-      desc: "Targeted magnetic pulses to recalibrate neural circuitry, enhancing plasticity and resolving functional latency in prefrontal networks.",
-      tag: "TMS / Neurogenesis",
-      scientificDetail: "Target Frequency: 10 Hz Theta-Burst • Cortical Target: Left DLPFC • Epigenetic Primer: Ca-AKG (1000mg) • Upregulates BDNF and resolves functional prefrontal latency within 18 sessions.",
-    },
-    {
-      num: "02",
-      title: "Endocrine & BHRT Optimization",
-      desc: "Dual & tri-agonist metabolic balancing and sex-calibrated hormone kinetics to resolve biological friction and optimize systemic stamina.",
-      tag: "Metabolic Endocrinology",
-      scientificDetail: "Target Biomarkers: Fasting Insulin < 4.0 uIU/mL, HOMA-IR < 1.0 • Receptor Targets: GLP-1R & GIPR arcuate nucleus signaling • Prevents sarcopenia via essential amino acid kinetic pairing.",
-    },
-    {
-      num: "03",
-      title: "Stoichiometric Cellular Saturation",
-      desc: "One-carbon metabolism resuscitation, bypassing enzyme hysteresis via active coenzymes (5-MTHF, Methyl-B12, P-5-P) and intracellular NAD+ restoration.",
-      tag: "Bioenergetics",
-      scientificDetail: "Intracellular NAD+ corridor: 40–100 μM • RBC Magnesium > 6.0 mg/dL • Direct provision of coenzyme-ready donors bypassing MTHFR / MTRR polymorphic bottlenecks.",
-    },
-    {
-      num: "04",
-      title: "HIFEM Autonomic Remodeling",
-      desc: "High-intensity focused electromagnetic therapy to fortify pelvic floor architecture, intimately linked to vagal tone and parasympathetic recovery.",
-      tag: "Autonomic Stability",
-      scientificDetail: "Supramaximal contractions: 11,200 per 28-min protocol • Magnetic Field: 2.5 Tesla • Re-anchors visceral vagal tone and baroreflex sensitivity (rMSSD > 55 ms).",
-    },
-    {
-      num: "05",
-      title: "Cerebral Photobiomodulation",
-      desc: "Transcranial application of near-infrared light targeting cytochrome C oxidase, accelerating ATP synthesis and cortical vascular hemodynamics.",
-      tag: "Mitochondrial Optics",
-      scientificDetail: "Dual Wavelength: 810nm & 1064nm pulsed at 40 Hz Gamma • Optical penetration directly activates Cytochrome c Oxidase Unit IV, clearing beta-amyloid synaptic debris.",
-    },
-    {
-      num: "06",
-      title: "Regenerative Peptide Kinetics",
-      desc: "Physician-calibrated peptide protocols (Epitalon, BPC-157, GHK-Cu) targeting cellular senescence mitigation, telomere defense, and tissue repair.",
-      tag: "Longevity Vectors",
-      scientificDetail: "Epitalon resets pineal melatonin nadir (>15 ng/mL) • BPC-157 accelerates blood-brain barrier tight junction restoration (Zonulin < 38 ng/mL) • Cyclical 8-week pulses.",
-    },
-  ];
 
   return (
     <div className="min-h-screen bg-canvas-obsidian text-text-surface flex flex-col selection:bg-champagne-gold selection:text-text-on-gold">
@@ -69,88 +23,10 @@ export default function Home() {
       <main className="flex-1">
         <HeroSection onOpenBooking={() => setIsBookingOpen(true)} />
 
-      {/* 
-        3. Treatment Pillars Grid [4:2712] (Service/Protocol Cards)
-      */}
-      <section id="modalities" className="py-28 px-6 lg:px-10 max-w-[1280px] mx-auto w-full">
-        <div className="text-center max-w-2xl mx-auto mb-20 space-y-4">
-          <div className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-widest text-champagne-gold">
-            <span className="w-1.5 h-1.5 rounded-full bg-champagne-gold" />
-            <span>Clinical Modalities &amp; Therapeutic Protocols</span>
-          </div>
-          <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-normal text-text-surface">
-            Physiological Foundations of Cognitive Performance
-          </h2>
-          <p className="font-body text-base text-text-surface-variant">
-            Our proprietary protocols target root-cause cellular mechanics, restoring the delicate stoichiometric corridors necessary for elite cognitive longevity.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {pillars.map((p, i) => (
-            <div
-              key={i}
-              data-testid={`pillar-card-${i}`}
-              role="button"
-              tabIndex={0}
-              aria-expanded={expandedPillar === i}
-              aria-controls={`pillar-details-${i}`}
-              aria-label={`${p.title} protocol details`}
-              onClick={() => setExpandedPillar(expandedPillar === i ? null : i)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  setExpandedPillar(expandedPillar === i ? null : i);
-                }
-              }}
-              className="group p-8 rounded-xl bg-surface-midnight border border-border-midnight hover:border-border-gold-accent transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_30px_rgba(0,0,0,0.5)] flex flex-col justify-between cursor-pointer select-none focus-visible:ring-1 focus-visible:ring-[#D4AF37] focus:outline-none"
-            >
-              <div>
-                <div className="flex items-center justify-between mb-6">
-                  <span className="font-mono text-xs text-champagne-gold tracking-widest">{p.num}</span>
-                  <span className="font-mono text-[10px] uppercase tracking-wider px-2.5 py-1 rounded bg-canvas-obsidian border border-border-midnight text-text-surface-muted group-hover:text-champagne-gold transition-colors">
-                    {p.tag}
-                  </span>
-                </div>
-                <h3 className="font-display text-xl sm:text-2xl text-text-surface mb-3 group-hover:text-champagne-gold-light transition-colors">
-                  {p.title}
-                </h3>
-                <p className="font-body text-sm leading-relaxed text-text-surface-variant">
-                  {p.desc}
-                </p>
-
-                {/* Progressive Disclosure Section: Expands with fluid cubic-bezier transition */}
-                <div
-                  id={`pillar-details-${i}`}
-                  data-testid={`pillar-details-${i}`}
-                  role="region"
-                  aria-label={`${p.title} scientific telemetry`}
-                  className={`overflow-hidden accordion-drawer transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-                    expandedPillar === i ? "max-h-48 opacity-100 mt-4 pt-4 border-t border-border-midnight" : "max-h-0 opacity-0"
-                  }`}
-                >
-                  <div className="p-3 rounded bg-canvas-obsidian/80 border border-border-gold-subtle text-xs font-mono text-vitality-sage space-y-1">
-                    <div className="text-[10px] text-champagne-gold uppercase tracking-wider font-semibold">
-                      Scientific Telemetry &bull; Progressive Disclosure
-                    </div>
-                    <p className="leading-relaxed text-text-surface-variant">
-                      {p.scientificDetail}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-6 pt-4 border-t border-border-midnight/80 flex items-center justify-between">
-                <span className="font-mono text-xs text-champagne-gold hover:text-champagne-gold-light tracking-wider uppercase inline-flex items-center gap-1">
-                  <span>{expandedPillar === i ? "Hide Telemetry" : "Expand Scientific Details"}</span>
-                  <span>{expandedPillar === i ? "&uarr;" : "&rarr;"}</span>
-                </span>
-                <span className="text-[10px] font-mono text-text-surface-muted">Click Card</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+        {/* 
+          3. Treatment Pillars Grid: Synchronized Centralized Modalities
+        */}
+        <TherapeuticProtocols />
 
       {/* 
         4. Scientific Paradigm Split Section [4:2663]
@@ -200,48 +76,10 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      {/* 
-        5. Scheduling CTA: Intake Invitation [4:2699]
-      */}
-      <section id="intake" className="py-28 px-6 lg:px-10 text-center max-w-3xl mx-auto w-full">
-        <div className="space-y-4 mb-8">
-          <div className="font-mono text-xs uppercase tracking-widest text-champagne-gold">
-            Confidential Clinical Intake
-          </div>
-          <h2 className="font-display text-3xl sm:text-4xl text-text-surface">
-            Apply for Diagnostic Consultation
-          </h2>
-          <p className="font-body text-base text-text-surface-variant">
-            Corridors are strictly limited to ensure uncompromising stoichiometric precision and continuous physician monitoring.
-          </p>
-        </div>
-
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            setIsBookingOpen(true);
-          }}
-          className="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto"
-        >
-          <input
-            type="email"
-            required
-            placeholder="ENTER CLINICAL COMMUNICATION EMAIL"
-            className="flex-1 px-5 py-3.5 rounded-full bg-surface-midnight border border-border-midnight text-text-surface font-mono text-xs placeholder:text-text-surface-muted/60 focus:outline-none focus:border-champagne-gold"
-          />
-          <button
-            type="submit"
-            className="px-8 py-3.5 rounded-full bg-champagne-gold hover:bg-champagne-gold-light text-text-on-gold font-mono text-xs font-bold uppercase tracking-wider transition-all shadow-[0_0_20px_rgba(212,175,55,0.25)] hover:shadow-[0_0_25px_rgba(212,175,55,0.4)] btn-luxury-shimmer"
-          >
-            Apply for Consultation
-          </button>
-        </form>
-      </section>
       </main>
 
       {/* 
-        6. Footer Component [4:2773]
+        4. Footer Component [4:2773]
       */}
       <footer className="mt-auto border-t border-border-gold-subtle bg-surface-midnight/80 py-12 px-6 lg:px-10">
         <div className="max-w-[1280px] mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
@@ -259,7 +97,7 @@ export default function Home() {
               Ethical Guidelines
             </Link>
             <Link href="/vault" className="hover:text-champagne-gold transition-colors">
-              Client Portal
+              Member Portal
             </Link>
             <span className="text-text-surface-muted">&bull;</span>
             <span className="text-text-surface-muted">HIPAA Compliant</span>

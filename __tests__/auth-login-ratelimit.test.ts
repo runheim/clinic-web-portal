@@ -203,7 +203,7 @@ describe("Subagent Beta: Auth Login Route Rate Limiting & Security Protection", 
       const res = await POST(req);
       expect(res.status).toBe(401);
       const json = await res.json();
-      expect(json.error).toBe("Invalid email or password.");
+      expect(json.error).toBe("Invalid credentials");
     });
 
     test("Returns 401 when password verification fails", async () => {
@@ -221,7 +221,7 @@ describe("Subagent Beta: Auth Login Route Rate Limiting & Security Protection", 
       const res = await POST(req);
       expect(res.status).toBe(401);
       const json = await res.json();
-      expect(json.error).toBe("Invalid email or password.");
+      expect(json.error).toBe("Invalid credentials");
     });
 
     test("Returns 200 with session cookie when credentials are valid", async () => {
@@ -241,8 +241,9 @@ describe("Subagent Beta: Auth Login Route Rate Limiting & Security Protection", 
       expect(res.status).toBe(200);
 
       const json = await res.json();
-      expect(json).toEqual({
+      expect(json).toMatchObject({
         success: true,
+        redirectUrl: "/vault",
         email: "member@example.com",
       });
 

@@ -37,10 +37,10 @@ export function TopNavBar({ onOpenBooking }: TopNavBarProps = {}) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isMobileMenuOpen]);
 
-  // Close mobile drawer if viewport is resized to desktop (>= 1280px)
+  // Close mobile drawer if viewport is resized to desktop (>= 1024px)
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth >= 1280 && isMobileMenuOpen) {
+      if (window.innerWidth >= 1024 && isMobileMenuOpen) {
         setIsMobileMenuOpen(false);
       }
     };
@@ -111,9 +111,9 @@ export function TopNavBar({ onOpenBooking }: TopNavBarProps = {}) {
       <header className="sticky top-0 z-40 w-full h-20 bg-canvas-obsidian/90 backdrop-blur-md border-b border-border-gold-subtle transition-colors">
         <div className="w-full max-w-[1400px] mx-auto h-full px-6 lg:px-12 flex items-center justify-between">
           {/* ========================================================= */}
-          {/* DESKTOP NAVIGATION (>= 1280px): Refined Three-Zone Layout */}
+          {/* DESKTOP NAVIGATION (>= 1024px): Refined Three-Zone Layout */}
           {/* ========================================================= */}
-          <div className="hidden xl:flex items-center justify-between w-full">
+          <div className="hidden lg:flex items-center justify-between w-full">
             {/* Zone 1 (Left): Brand Identity */}
             <Link
               href="/"
@@ -131,7 +131,7 @@ export function TopNavBar({ onOpenBooking }: TopNavBarProps = {}) {
             {/* Zone 2 (Center): Primary Navigation Links */}
             <nav
               aria-label="Primary Navigation"
-              className="flex items-center gap-8 xl:gap-10 text-[12px] font-mono tracking-widest uppercase"
+              className="flex items-center gap-x-8 text-[12px] font-mono tracking-widest uppercase"
             >
               <Link
                 href="/services"
@@ -167,37 +167,20 @@ export function TopNavBar({ onOpenBooking }: TopNavBarProps = {}) {
 
             {/* Zone 3 (Right): Actions & Portal Access */}
             <div className="flex items-center gap-6 shrink-0">
-              {/* Member Login Gateway */}
-              <Link
-                href="/login"
-                className="font-mono text-[11px] uppercase tracking-widest text-champagne-gold/90 hover:text-champagne-gold transition-colors duration-200 py-1"
-              >
-                Member Login
-              </Link>
-
-              {/* Client Portal Deep-Link */}
+              {/* Consolidated Member Portal Button/Link */}
               <Link
                 href="/vault"
-                className="font-mono text-[11px] uppercase tracking-widest text-[#DFE2F1] hover:text-champagne-gold transition-colors duration-200 py-1"
+                className="font-mono text-[12px] uppercase tracking-widest text-[#DFE2F1] hover:text-champagne-gold transition-colors duration-200 py-1"
               >
-                Client Portal
-              </Link>
-
-              {/* Primary Assessment Pill CTA */}
-              <Link
-                href="/assessment"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-champagne-gold hover:bg-champagne-gold-light text-text-on-gold font-mono text-[11px] font-bold uppercase tracking-wider transition-all shadow-[0_0_20px_rgba(212,175,55,0.25)] hover:shadow-[0_0_25px_rgba(212,175,55,0.4)] hover:scale-[1.02] active:scale-[0.98] btn-luxury-shimmer"
-              >
-                <span>Assessment</span>
-                <span aria-hidden="true">→</span>
+                Member Portal
               </Link>
             </div>
           </div>
 
           {/* ========================================================= */}
-          {/* MOBILE NAVIGATION BAR (< 1280px)                          */}
+          {/* MOBILE NAVIGATION BAR (< 1024px)                          */}
           {/* ========================================================= */}
-          <div className="flex xl:hidden items-center justify-between w-full">
+          <div className="flex lg:hidden items-center justify-between w-full">
             {/* Left: Compact brand insignia */}
             <Link
               href="/"
@@ -247,7 +230,7 @@ export function TopNavBar({ onOpenBooking }: TopNavBarProps = {}) {
         aria-modal="true"
         aria-label="Mobile Navigation"
         aria-hidden={!isMobileMenuOpen}
-        className={`fixed inset-0 top-20 z-50 bg-[#0B0F19]/95 backdrop-blur-2xl xl:hidden transition-all duration-300 ease-out overflow-y-auto ${
+        className={`fixed inset-0 top-20 z-50 bg-[#0B0F19]/95 backdrop-blur-2xl lg:hidden transition-all duration-300 ease-out overflow-y-auto ${
           isMobileMenuOpen
             ? "opacity-100 translate-y-0 pointer-events-auto"
             : "opacity-0 -translate-y-4 pointer-events-none invisible"
@@ -316,32 +299,14 @@ export function TopNavBar({ onOpenBooking }: TopNavBarProps = {}) {
                     className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] shadow-[0_0_6px_rgba(212,175,55,0.6)] shrink-0"
                     aria-hidden="true"
                   />
-                  <span>Client Portal</span>
-                </Link>
-                <Link
-                  href="/login"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="font-mono text-xs uppercase tracking-widest text-[#DFE2F1]/80 hover:text-[#D4AF37] transition-colors py-2 flex items-center gap-3"
-                >
-                  <span
-                    className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] shadow-[0_0_6px_rgba(212,175,55,0.6)] shrink-0"
-                    aria-hidden="true"
-                  />
-                  <span>Member Login</span>
+                  <span>Member Portal</span>
                 </Link>
               </nav>
             </div>
           </div>
 
-          {/* Category 3: Primary Action & Concierge Triage */}
+          {/* Category 3: Concierge Triage */}
           <div className="pt-8 mt-auto border-t border-[#D4AF37]/10 flex flex-col items-center gap-3">
-            <Link
-              href="/assessment"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="w-full py-3.5 px-6 rounded-full bg-champagne-gold hover:bg-champagne-gold-light text-text-on-gold font-mono text-xs font-bold uppercase tracking-widest text-center transition-all shadow-[0_0_20px_rgba(212,175,55,0.25)] hover:shadow-[0_0_25px_rgba(212,175,55,0.4)] hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 btn-luxury-shimmer"
-            >
-              <span>Initiate Assessment →</span>
-            </Link>
             <a
               href="tel:+18005550199"
               onClick={() => setIsMobileMenuOpen(false)}

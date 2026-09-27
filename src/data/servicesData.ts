@@ -442,4 +442,108 @@ export const servicesData: ServiceProtocol[] = [
       "Peretti et al., Nature 2015 (RBM3 and the structural repair of synaptic contacts).",
     ],
   },
+  {
+    slug: "dementia-prevention",
+    title: "Dementia Prevention & Expanded Cognitive Trajectory",
+    subtitle: "Early Risk Stratification & Glymphatic Optimization",
+    tagline: "Preserving Independent Cognitive Reserve Across Decades",
+    abstract:
+      "Comprehensive early-detection, risk stratification, and multi-modal clinical intervention targeting Mild Cognitive Impairment (MCI) and neurodegenerative pathways. Combines advanced neuroimaging, quantitative cognitive tracking, and emerging anti-amyloid monoclonal antibody clinical navigation with targeted metabolic and vascular rescue protocols to preserve independent cognitive reserve.",
+    molecularTargets: [
+      {
+        name: "Blood-Brain Barrier Tight Junctions (Claudin-5)",
+        mechanism: "Restores cerebrovascular endothelial integrity to prevent neuro-toxic plasma protein infiltration.",
+        biomarkerRange: "CSF/Albumin ratio normalized < 5.0",
+      },
+      {
+        name: "Glymphatic Convective Flux (Aquaporin-4 / AQP4)",
+        mechanism: "Amplifies nocturnal glymphatic paravascular interstitial fluid clearance of beta-amyloid and hyperphosphorylated tau.",
+        biomarkerRange: "Slow-wave sleep delta power maximized on sleep EEG",
+      },
+      {
+        name: "Synaptic Density & Cortical Reserve",
+        mechanism: "Upregulates synaptic vesicle glycoprotein 2A (SV2A) density and neurotrophin bioavailability.",
+        biomarkerRange: "Serum p-tau217 and NfL monitored within normal reference corridors",
+      },
+    ],
+    clinicalCadence: {
+      frequency: "Comprehensive Protocol",
+      duration: "12-month longitudinal surveillance and clinical navigation",
+      monitoringCorridor: "Volumetric NeuroQuant MRI, baseline p-tau217/NfL, and computerized neurocognitive tests",
+      deliveryMethod: "Multi-modal vascular, sleep, metabolic, and clinical monoclonal navigation",
+    },
+    contraindicationsGate: {
+      summary: "Strict neuro-imaging and ARIA contraindication safety gates.",
+      rules: [
+        {
+          condition: "Presence of > 4 cerebral microbleeds on susceptibility-weighted imaging (SWI)",
+          action: "HOLD on emerging anti-amyloid monoclonal antibody navigation; proceed with vascular support.",
+          rationale: "Mitigates Amyloid-Related Imaging Abnormalities (ARIA-H) risk.",
+          isAbsolute: true,
+        },
+        {
+          condition: "Uncontrolled systemic hypertension (SBP > 160 mmHg)",
+          action: "RECALIBRATE vascular pressure before nocturnal glymphatic therapies.",
+          rationale: "Cerebral perfusion pressure must be stabilized to prevent microvascular stress.",
+          isAbsolute: false,
+        },
+      ],
+    },
+    clinicalEvidence: [
+      "van Dyck et al., NEJM 2023 (Lecanemab in Early Alzheimer's Disease).",
+      "Nedergaard & Goldman, Science 2020 (Glymphatic failure as a driver of neurodegenerative pathology).",
+    ],
+  },
+  {
+    slug: "hormone-optimization",
+    title: "Sexual Wellness & Advanced Hormone Optimization",
+    subtitle: "Subcutaneous Pellet Implantation & Precision Endocrinology",
+    tagline: "Steady-State Systemic Vitality & Microvascular Perfusion",
+    abstract:
+      "Precision subcutaneous hormone pellet implantation and bio-identical endocrinology synchronized with vascular and pelvic restorative modalities. Delivers extended-release bio-identical hormone pellets to achieve steady-state physiological serum levels without hepatic first-pass fluctuations, restoring physical vigor, body composition, and intimacy.",
+    molecularTargets: [
+      {
+        name: "Endothelial Nitric Oxide Synthase (eNOS)",
+        mechanism: "Upregulates nitric oxide production for microvascular perfusion, pelvic blood flow, and somatic vitality.",
+        biomarkerRange: "Reactive Hyperemia Index (EndoPAT) > 1.8",
+      },
+      {
+        name: "Androgen / Estrogen Receptor Saturation",
+        mechanism: "Provides steady-state bioavailability to maintain musculoskeletal mass, cognitive bandwidth, and libido.",
+        biomarkerRange: "Calculated free testosterone in optimal physiological upper tertile",
+      },
+      {
+        name: "Sex Hormone-Binding Globulin (SHBG) Recalibration",
+        mechanism: "Prevents metabolic binding ceilings to maximize tissue-available free hormone fractions.",
+        biomarkerRange: "SHBG balanced between 30–60 nmol/L",
+      },
+    ],
+    clinicalCadence: {
+      frequency: "Targeted Protocol",
+      duration: "4 to 6-month continuous subcutaneous bio-pellet release cycle",
+      monitoringCorridor: "Baseline, 4-week, and pre-insertion labs (Total/Free T, Estradiol, CBC, PSA, CMP, Lipid panel)",
+      deliveryMethod: "In-office sterile subcutaneous trocar pellet implantation",
+    },
+    contraindicationsGate: {
+      summary: "Hematologic and endocrine oncologic safety gates.",
+      rules: [
+        {
+          condition: "Baseline Hematocrit > 54% or active erythrocytosis",
+          action: "ABSOLUTE HOLD on androgen pellet implantation until therapeutic venesection.",
+          rationale: "Elevated blood viscosity increases thromboembolic and microvascular risks.",
+          isAbsolute: true,
+        },
+        {
+          condition: "History of untreated prostate carcinoma or unexplained PSA elevation",
+          action: "ABSOLUTE CONTRAINDICATION until clearance by treating urologic oncologist.",
+          rationale: "Androgen receptor activation contraindicated with active androgen-sensitive malignancy.",
+          isAbsolute: true,
+        },
+      ],
+    },
+    clinicalEvidence: [
+      "Traish et al., Mayo Clin Proc 2017 (Long-term benefits and safety profile of testosterone therapy).",
+      "Khera et al., J Sex Med 2016 (Hormone optimization and vascular endothelial function).",
+    ],
+  },
 ];
