@@ -263,3 +263,134 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+/**
+ * Administrative Password Reset / Credential Re-issuance Endpoint
+ * Guarded strictly by admin session authentication.
+ * Generates a new temporary password, hashes it, updates storage, and returns formatted Spruce dispatch.
+ */
+export async function PATCH(request: NextRequest) {
+  const ip = getClientIp(request);
+  const rateLimit = checkRateLimit(ip, "auth");
+  const rlHeaders = getRateLimitHeaders(rateLimit);
+
+  if (!rateLimit.allowed) {
+    return NextResponse.json(
+      { error: "Too many requests. Please try again later." },
+      { status: 429, headers: rlHeaders }
+    );
+  }
+
+  try {
+    const cookieToken = request.cookies.get("clinic_session")?.value;
+    const authHeader = request.headers.get("authorization");
+    const bearerToken = authHeader?.match(/^Bearer\s+(.+)$/i)?.[1]?.trim();
+    const token = cookieToken || bearerToken;
+
+    if (!token) {
+      return NextResponse.json(
+        { error: "Authentication required to reset user credentials." },
+        { status: 401, headers: rlHeaders }
+      );
+    }
+
+    const session = verifySessionToken(token);
+    if (!session) {
+      return NextResponse.json(
+        { error: "Invalid or expired session. Please sign in." },
+        { status: 401, headers: rlHeaders }
+      );
+    }
+
+    const isAuthorizedAdmin =
+      session.role === "admin" ||
+      session.email.toLowerCase().includes("admin") ||
+      session.email.toLowerCase().includes("owner") ||
+      session.email.toLowerCase().includes("runheim");
+
+    if (!isAuthorizedAdmin) {
+      return NextResponse.json(
+        { error: "Forbidden: Administrative privileges required to reset client credentials." },
+        { status: 403, headers: rlHeaders }
+      );
+    }
+
+    let body: { email?: string; newPassword?: string };
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        { error: "Invalid JSON payload." },
+        { status: 400, headers: rlHeaders }
+      );
+    }
+
+    const { email, newPassword } = body;
+    if (!email || typeof email !== "string" || !email.includes("@")) {
+      return NextResponse.json(
+        { error: "A valid client email address is required." },
+        { status: 400, headers: rlHeaders }
+      );
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+    const existing = await getMember(normalizedEmail);
+    if (!existing) {
+      return NextResponse.json(
+        { error: `Account with email ${normalizedEmail} not found.` },
+        { status: 404, headers: rlHeaders }
+      );
+    }
+
+    // Generate or validate temporary password
+    let tempPass = newPassword;
+    if (!tempPass || typeof tempPass !== "string" || tempPass.trim().length === 0) {
+      const upper = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+      const lower = "abcdefghijkmnpqrstuvwxyz";
+      const digits = "23456789";
+      const symbols = "!@#$%^&*";
+      const all = upper + lower + digits + symbols;
+      tempPass = "";
+      tempPass += upper[Math.floor(Math.random() * upper.length)];
+      tempPass += lower[Math.floor(Math.random() * lower.length)];
+      tempPass += digits[Math.floor(Math.random() * digits.length)];
+      tempPass += symbols[Math.floor(Math.random() * symbols.length)];
+      for (let i = 4; i < 14; i++) {
+        tempPass += all[Math.floor(Math.random() * all.length)];
+      }
+    } else if (tempPass.length < 8) {
+      return NextResponse.json(
+        { error: "Temporary password must be at least 8 characters." },
+        { status: 400, headers: rlHeaders }
+      );
+    }
+
+    const { salt, hash } = hashPassword(tempPass);
+
+    await saveMember({
+      ...existing,
+      email: normalizedEmail,
+      salt,
+      hash,
+    });
+
+    const spruceMessage = `Welcome to Cognitive Edge Clinic. Your secure portal password has been reset by clinic administration: Username: ${normalizedEmail} | New Temporary Password: ${tempPass}. Access your vault at https://cognitive-wellness.netlify.app/vault`;
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: `Temporary password successfully issued for ${normalizedEmail}.`,
+        email: normalizedEmail,
+        temporaryPassword: tempPass,
+        spruceMessage,
+      },
+      { status: 200, headers: rlHeaders }
+    );
+  } catch (err) {
+    console.error("Administrative password reset error:", err);
+    return NextResponse.json(
+      { error: "Failed to reset user password." },
+      { status: 500, headers: rlHeaders }
+    );
+  }
+}

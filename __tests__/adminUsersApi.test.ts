@@ -1,6 +1,10 @@
 import { NextRequest } from "next/server";
-import { POST as adminUsersPostHandler, GET as adminUsersGetHandler } from "@/app/api/admin/users/route";
-import { createSessionToken, saveMember, getMember } from "@/lib/auth/server";
+import {
+  POST as adminUsersPostHandler,
+  GET as adminUsersGetHandler,
+  PATCH as adminUsersPatchHandler,
+} from "@/app/api/admin/users/route";
+import { createSessionToken, saveMember, getMember, verifyPassword } from "@/lib/auth/server";
 import { isWebAuthnAvailable, isPlatformAuthenticatorAvailable, WEBAUTHN_DEPRECATED_CONFIG } from "@/lib/auth/webauthn";
 
 describe("Admin Users API & WebAuthn Decoupling Suite", () => {
@@ -209,6 +213,113 @@ describe("Admin Users API & WebAuthn Decoupling Suite", () => {
       expect(runheimAccount.firstName).toContain("David");
       expect(runheimAccount.phone).toBe("+1 (743) 333-0880");
       expect(runheimAccount.membershipTier).toBe("Clinical Enclave Admin");
+    });
+  });
+
+  describe("Administrative Password Reset Route (PATCH /api/admin/users)", () => {
+    test("rejects unauthenticated PATCH request with HTTP 401", async () => {
+      const req = new NextRequest("https://cognitiveedgeclinic.com/api/admin/users", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: "target@test.com" }),
+      });
+
+      const res = await adminUsersPatchHandler(req);
+      expect(res.status).toBe(401);
+      const data = await res.json();
+      expect(data.error).toContain("Authentication required");
+    });
+
+    test("rejects client session PATCH request with HTTP 403 Forbidden", async () => {
+      const clientToken = createSessionToken("standardclient@test.com", "client");
+      const req = new NextRequest("https://cognitiveedgeclinic.com/api/admin/users", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: `clinic_session=${clientToken}`,
+        },
+        body: JSON.stringify({ email: "target@test.com" }),
+      });
+
+      const res = await adminUsersPatchHandler(req);
+      expect(res.status).toBe(403);
+      const data = await res.json();
+      expect(data.error).toContain("Forbidden");
+    });
+
+    test("returns HTTP 404 if target user account does not exist", async () => {
+      const adminToken = createSessionToken("admin@cognitiveedge.clinic", "admin");
+      const req = new NextRequest("https://cognitiveedgeclinic.com/api/admin/users", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: `clinic_session=${adminToken}`,
+        },
+        body: JSON.stringify({ email: "nonexistent_patient_999@test.com" }),
+      });
+
+      const res = await adminUsersPatchHandler(req);
+      expect(res.status).toBe(404);
+      const data = await res.json();
+      expect(data.error).toContain("not found");
+    });
+
+    test("successfully resets password, updates hash, and generates Spruce dispatch message", async () => {
+      const adminToken = createSessionToken("owner@cognitiveedge.clinic", "admin");
+      const targetEmail = `reset_target_${Date.now()}@patient.com`;
+      const originalPass = "OldPassword123!";
+      const newTemporaryPass = "BrandNewTempPass2026!";
+
+      // First create user
+      const createReq = new NextRequest("https://cognitiveedgeclinic.com/api/admin/users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: `clinic_session=${adminToken}`,
+        },
+        body: JSON.stringify({
+          firstName: "Marcus",
+          lastName: "Sterling",
+          phone: "+1 (336) 555-0189",
+          email: targetEmail,
+          password: originalPass,
+          membershipTier: "Foundation",
+        }),
+      });
+      await adminUsersPostHandler(createReq);
+
+      // Verify original credentials verify
+      let member = await getMember(targetEmail);
+      expect(member).not.toBeNull();
+      expect(verifyPassword(originalPass, member!.salt, member!.hash)).toBe(true);
+
+      // Reset password via PATCH
+      const patchReq = new NextRequest("https://cognitiveedgeclinic.com/api/admin/users", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: `clinic_session=${adminToken}`,
+        },
+        body: JSON.stringify({
+          email: targetEmail,
+          newPassword: newTemporaryPass,
+        }),
+      });
+
+      const patchRes = await adminUsersPatchHandler(patchReq);
+      expect(patchRes.status).toBe(200);
+      const patchData = await patchRes.json();
+      expect(patchData.success).toBe(true);
+      expect(patchData.temporaryPassword).toBe(newTemporaryPass);
+      expect(patchData.spruceMessage).toContain("Your secure portal password has been reset");
+      expect(patchData.spruceMessage).toContain(targetEmail);
+      expect(patchData.spruceMessage).toContain(newTemporaryPass);
+
+      // Verify the new password verifies and old password fails
+      member = await getMember(targetEmail);
+      expect(member).not.toBeNull();
+      expect(verifyPassword(newTemporaryPass, member!.salt, member!.hash)).toBe(true);
+      expect(verifyPassword(originalPass, member!.salt, member!.hash)).toBe(false);
     });
   });
 });

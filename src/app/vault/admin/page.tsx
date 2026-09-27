@@ -73,6 +73,17 @@ export default function AdminProvisioningPage() {
   const [spruceMessage, setSpruceMessage] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
+  // Password Reset Modal State
+  const [resetModalAccount, setResetModalAccount] = useState<AccountRecord | null>(null);
+  const [resetNewPassword, setResetNewPassword] = useState("");
+  const [isResetting, setIsResetting] = useState(false);
+  const [resetError, setResetError] = useState<string | null>(null);
+  const [resetResult, setResetResult] = useState<{
+    temporaryPassword: string;
+    spruceMessage: string;
+  } | null>(null);
+  const [resetCopied, setResetCopied] = useState(false);
+
   // Accounts Ledger Data State
   const [accounts, setAccounts] = useState<AccountRecord[]>([]);
   const [isLoadingAccounts, setIsLoadingAccounts] = useState(false);
@@ -199,6 +210,61 @@ export default function AdminProvisioningPage() {
       navigator.clipboard.writeText(spruceMessage);
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
+    }
+  };
+
+  const handleOpenResetModal = (account: AccountRecord) => {
+    setResetModalAccount(account);
+    setResetNewPassword(generateSecurePassword());
+    setResetError(null);
+    setResetResult(null);
+    setResetCopied(false);
+  };
+
+  const handleCloseResetModal = () => {
+    setResetModalAccount(null);
+    setResetError(null);
+    setResetResult(null);
+    setResetCopied(false);
+  };
+
+  const handleConfirmReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resetModalAccount) return;
+    setIsResetting(true);
+    setResetError(null);
+    try {
+      const res = await fetch("/api/admin/users", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: resetModalAccount.email,
+          newPassword: resetNewPassword,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to reset password.");
+      }
+
+      setResetResult({
+        temporaryPassword: data.temporaryPassword,
+        spruceMessage: data.spruceMessage,
+      });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to reset password.";
+      setResetError(msg);
+    } finally {
+      setIsResetting(false);
+    }
+  };
+
+  const copyResetToClipboard = () => {
+    if (resetResult?.spruceMessage) {
+      navigator.clipboard.writeText(resetResult.spruceMessage);
+      setResetCopied(true);
+      setTimeout(() => setResetCopied(false), 2500);
     }
   };
 
@@ -567,15 +633,18 @@ export default function AdminProvisioningPage() {
                       </span>
                     </div>
                   </th>
-                  <th className="p-3.5 font-semibold text-right whitespace-nowrap">
+                  <th className="p-3.5 font-semibold text-center whitespace-nowrap">
                     Role
+                  </th>
+                  <th className="p-3.5 font-semibold text-right whitespace-nowrap">
+                    Actions
                   </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60 text-slate-300">
                 {isLoadingAccounts && accounts.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="p-8 text-center text-slate-500">
+                    <td colSpan={8} className="p-8 text-center text-slate-500">
                       <span className="inline-block animate-pulse text-[#D4AF37]">
                         Loading account records from secure storage...
                       </span>
@@ -583,7 +652,7 @@ export default function AdminProvisioningPage() {
                   </tr>
                 ) : filteredAccounts.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="p-8 text-center text-slate-500">
+                    <td colSpan={8} className="p-8 text-center text-slate-500">
                       No account records found matching your filters.
                     </td>
                   </tr>
@@ -641,7 +710,7 @@ export default function AdminProvisioningPage() {
                         </td>
 
                         {/* Role Badge */}
-                        <td className="p-3.5 text-right whitespace-nowrap">
+                        <td className="p-3.5 text-center whitespace-nowrap">
                           <span
                             className={`inline-block px-2 py-0.5 rounded text-[10px] uppercase font-mono tracking-wider ${
                               isAdminUser
@@ -651,6 +720,19 @@ export default function AdminProvisioningPage() {
                           >
                             {account.role}
                           </span>
+                        </td>
+
+                        {/* Actions */}
+                        <td className="p-3.5 text-right whitespace-nowrap">
+                          <button
+                            type="button"
+                            onClick={() => handleOpenResetModal(account)}
+                            className="px-2.5 py-1 rounded bg-[#0B0F19] hover:bg-[#D4AF37]/20 border border-slate-700 hover:border-[#D4AF37]/60 text-slate-300 hover:text-[#D4AF37] font-mono text-[11px] tracking-wide transition-colors inline-flex items-center gap-1.5 cursor-pointer shadow-sm"
+                            title={`Issue temporary password for ${account.email}`}
+                          >
+                            <span className="text-[#D4AF37]">⟳</span>
+                            <span>Reset PW</span>
+                          </button>
                         </td>
                       </tr>
                     );
@@ -845,6 +927,140 @@ export default function AdminProvisioningPage() {
       <footer className="max-w-7xl mx-auto w-full text-center font-mono text-[10px] text-slate-500 pt-6 border-t border-slate-800">
         &copy; 2026 COGNITIVE EDGE CLINICAL GROUP &bull; ADMINISTRATIVE CREDENTIAL PROVISIONING &amp; SPREADSHEET LEDGER DESK
       </footer>
+
+      {/* Password Reset Modal */}
+      {resetModalAccount && (
+        <div className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#121826] border border-[#D4AF37]/50 rounded-2xl max-w-lg w-full p-6 sm:p-8 shadow-[0_0_50px_rgba(0,0,0,0.8)] relative space-y-6">
+            {/* Modal Header */}
+            <div className="flex items-start justify-between border-b border-slate-800 pb-4">
+              <div>
+                <div className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-[#D4AF37]">
+                  <span>✦</span>
+                  <span>Credential Re-issuance Protocol</span>
+                </div>
+                <h3 className="font-display text-xl text-white mt-1">
+                  Issue Temporary Password
+                </h3>
+                <p className="font-mono text-xs text-slate-400 mt-0.5">
+                  {resetModalAccount.firstName} {resetModalAccount.lastName} &bull; <span className="text-slate-300">{resetModalAccount.email}</span>
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleCloseResetModal}
+                className="text-slate-400 hover:text-white font-mono text-sm px-2 py-1 rounded hover:bg-slate-800 transition-colors cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Error Message */}
+            {resetError && (
+              <div className="p-3 rounded-lg bg-red-950/40 border border-red-800/40 text-red-300 font-mono text-xs">
+                {resetError}
+              </div>
+            )}
+
+            {!resetResult ? (
+              <form onSubmit={handleConfirmReset} className="space-y-5">
+                <div className="p-3.5 rounded-lg bg-[#0B0F19] border border-slate-800 font-mono text-[11px] text-slate-400 space-y-1.5 leading-relaxed">
+                  <div className="flex items-center gap-1.5 text-[#D4AF37] font-semibold text-xs">
+                    <span>🛡</span> Zero-Knowledge Credential Security
+                  </div>
+                  <p>
+                    Passphrases are irreversibly one-way hashed with salted <span className="text-slate-200">scrypt</span> in accordance with HIPAA standards. Issuing a new temporary password updates the credential container immediately.
+                  </p>
+                </div>
+
+                <div className="space-y-1.5 text-left">
+                  <div className="flex items-center justify-between">
+                    <label className="font-mono text-xs text-slate-300 block">
+                      New Temporary Password
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setResetNewPassword(generateSecurePassword())}
+                      className="font-mono text-[11px] text-[#D4AF37] hover:underline cursor-pointer"
+                    >
+                      Regenerate ⚅
+                    </button>
+                  </div>
+                  <input
+                    type="text"
+                    required
+                    minLength={8}
+                    value={resetNewPassword}
+                    onChange={(e) => setResetNewPassword(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-lg bg-[#0B0F19] border border-slate-700 text-white font-mono text-xs focus:border-[#D4AF37] focus:outline-none"
+                  />
+                </div>
+
+                <div className="flex items-center justify-end gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={handleCloseResetModal}
+                    className="px-4 py-2 rounded-lg border border-slate-700 hover:bg-slate-800 text-slate-300 font-mono text-xs cursor-pointer transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isResetting}
+                    className="px-5 py-2 rounded-lg bg-[#D4AF37] hover:bg-[#E6C65C] text-[#0B0F19] font-mono text-xs font-bold uppercase tracking-wider disabled:opacity-50 cursor-pointer transition-all shadow-[0_0_15px_rgba(212,175,55,0.2)]"
+                  >
+                    {isResetting ? "Updating Credentials..." : "Confirm & Issue Password"}
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <div className="space-y-5">
+                <div className="p-3.5 rounded-lg bg-emerald-950/40 border border-emerald-800/40 text-emerald-300 font-mono text-xs flex items-center gap-2">
+                  <span>✓</span>
+                  <span>Credentials updated successfully in Netlify Blobs storage.</span>
+                </div>
+
+                <div className="space-y-1.5 text-left">
+                  <span className="font-mono text-[11px] uppercase tracking-wider text-slate-400 block">
+                    Issued Temporary Password
+                  </span>
+                  <div className="p-3 rounded-lg bg-[#0B0F19] border border-[#D4AF37]/50 font-mono text-sm text-[#D4AF37] font-bold select-all tracking-wider">
+                    {resetResult.temporaryPassword}
+                  </div>
+                </div>
+
+                <div className="space-y-2 text-left">
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-[11px] uppercase tracking-wider text-slate-400">
+                      Spruce Care Messenger Dispatch Message
+                    </span>
+                    <button
+                      type="button"
+                      onClick={copyResetToClipboard}
+                      className="px-3 py-1 rounded bg-[#0B0F19] hover:bg-[#161F33] border border-[#D4AF37]/40 text-[#D4AF37] font-mono text-xs cursor-pointer transition-colors"
+                    >
+                      {resetCopied ? "✓ Copied!" : "Copy Dispatch"}
+                    </button>
+                  </div>
+                  <div className="p-3 rounded bg-[#0B0F19] border border-slate-800 font-mono text-xs text-slate-300 select-all leading-relaxed max-h-32 overflow-y-auto">
+                    {resetResult.spruceMessage}
+                  </div>
+                </div>
+
+                <div className="flex justify-end pt-2">
+                  <button
+                    type="button"
+                    onClick={handleCloseResetModal}
+                    className="px-5 py-2 rounded-lg bg-[#D4AF37] hover:bg-[#E6C65C] text-[#0B0F19] font-mono text-xs font-bold uppercase cursor-pointer transition-all"
+                  >
+                    Done
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
