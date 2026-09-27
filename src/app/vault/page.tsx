@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { BookingModal } from "@/components/marketing/BookingModal";
 
 export const inPortalServices = [
@@ -87,6 +88,7 @@ export const VaultInner: React.FC<VaultInnerProps> = ({
   initialEmail = null,
   initialRole = "client",
 }) => {
+  const router = useRouter();
   const [isBookingOpen, setIsBookingOpen] = useState(false);
 
   // Auth state
@@ -94,7 +96,9 @@ export const VaultInner: React.FC<VaultInnerProps> = ({
   const [memberEmail, setMemberEmail] = useState<string | null>(initialEmail);
   const [memberRole, setMemberRole] = useState<"admin" | "client">(
     initialRole ||
-      (initialEmail?.toLowerCase().includes("admin") || initialEmail?.toLowerCase().includes("owner")
+      (initialEmail?.toLowerCase().includes("admin") ||
+      initialEmail?.toLowerCase().includes("owner") ||
+      initialEmail?.toLowerCase().includes("runheim")
         ? "admin"
         : "client")
   );
@@ -135,7 +139,10 @@ export const VaultInner: React.FC<VaultInnerProps> = ({
           setMemberEmail(data.email);
           const emailLower = (data.email || "").toLowerCase();
           const role =
-            data.role === "admin" || emailLower.includes("admin") || emailLower.includes("owner")
+            data.role === "admin" ||
+            emailLower.includes("admin") ||
+            emailLower.includes("owner") ||
+            emailLower.includes("runheim")
               ? "admin"
               : "client";
           setMemberRole(role);
@@ -171,10 +178,18 @@ export const VaultInner: React.FC<VaultInnerProps> = ({
       setMemberEmail(data.email);
       const emailLower = (data.email || "").toLowerCase();
       const role =
-        data.role === "admin" || emailLower.includes("admin") || emailLower.includes("owner")
+        data.role === "admin" ||
+        emailLower.includes("admin") ||
+        emailLower.includes("owner") ||
+        emailLower.includes("runheim")
           ? "admin"
           : "client";
       setMemberRole(role);
+
+      // If user has administrative privileges, direct to the admin desk
+      if (role === "admin") {
+        router.push("/vault/admin");
+      }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Failed to authenticate.";
       setErrorMsg(msg);

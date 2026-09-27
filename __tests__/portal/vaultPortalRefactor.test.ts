@@ -3,6 +3,15 @@ import { renderToString } from "react-dom/server";
 import VaultPage, { inPortalServices, VaultInner } from "@/app/vault/page";
 import ConsultationPage from "@/app/consultation/page";
 
+jest.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: jest.fn(),
+    replace: jest.fn(),
+    prefetch: jest.fn(),
+    back: jest.fn(),
+  }),
+}));
+
 describe("Subagent 4 & 5 Verification Suite: Consultation & Vault Portal Refactor", () => {
   describe("Subagent 4: Consultation Route & Channel Directives", () => {
     let consultationHtml: string;

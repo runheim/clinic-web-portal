@@ -28,6 +28,54 @@ declare global {
   var __CLINIC_USER_STORE_CACHE__: Map<string, UserRecord> | undefined;
 }
 
+export const DEFAULT_SEED_USERS: Record<string, UserRecord> = {
+  "andreas.runheim@gmail.com": {
+    email: "andreas.runheim@gmail.com",
+    passwordHash: "$2b$10$A.ahaYKNGchENB.YoY.tCuLyDysttZrs9zNAsp6IXeHEHa3uiKvq2",
+    salt: "392c2b54903318dde62bc03d52c5d710",
+    hash: "de4fae1cd1ca06895b46c5084094dd72a2b01f15c407331b2d5f315355d776e98eb3c5841cc818349c818058868401507e85c9395b77c46555d8274d588203ac",
+    role: "admin",
+    clientName: "Dr. David Andreas Runheim",
+    createdAt: "2026-09-27T15:26:40.333Z",
+  },
+  "coordinator@cognitiveedge.com": {
+    email: "coordinator@cognitiveedge.com",
+    passwordHash: "$2b$10$A.ahaYKNGchENB.YoY.tCuLyDysttZrs9zNAsp6IXeHEHa3uiKvq2",
+    salt: "ee9b79b9f91752d47fcdccc93be7f309",
+    hash: "f5940ce4e61d6f3d0817515f0597cfd7f974f8844b4b37491f03d536b12e9760d7daded13fa1d2784fa867888ce31bdd3016763d24a5ef1a74ca36456853d3d4",
+    role: "admin",
+    clientName: "Clinic Coordinator",
+    createdAt: "2026-09-27T12:27:16.585Z",
+  },
+  "admin@cognitiveedgeclinic.com": {
+    email: "admin@cognitiveedgeclinic.com",
+    salt: "7304396fa3aabd9afac91c68d55fd220",
+    hash: "3e8f8fc832232d8cf1404d6216cab718fcef606086c6cffa6ec50b9bd3fb24a39ce1873708bfde73f0a8d96ff6a40fb34bd01a31c5cbe3f14a2b115eeab98768",
+    passwordHash: "7304396fa3aabd9afac91c68d55fd220:3e8f8fc832232d8cf1404d6216cab718fcef606086c6cffa6ec50b9bd3fb24a39ce1873708bfde73f0a8d96ff6a40fb34bd01a31c5cbe3f14a2b115eeab98768",
+    role: "admin",
+    clientName: "Clinical Administrator",
+    createdAt: "2026-09-27T15:00:00.000Z",
+  },
+  "client.standard@cognitiveedgeclinic.com": {
+    email: "client.standard@cognitiveedgeclinic.com",
+    salt: "75b31572eeee8dc1aac662b0440682ae",
+    hash: "96e27e58603646d68e4dc1465fc5966cdd79486e9edaad899d58324602265d35e5a0680b54251efcbe350562618bd07939ad47ded225d3ecf262c7dfa11c6e74",
+    passwordHash: "75b31572eeee8dc1aac662b0440682ae:96e27e58603646d68e4dc1465fc5966cdd79486e9edaad899d58324602265d35e5a0680b54251efcbe350562618bd07939ad47ded225d3ecf262c7dfa11c6e74",
+    role: "client",
+    clientName: "Demo Standard Member",
+    createdAt: "2026-09-27T15:00:00.000Z",
+  },
+  "vip.member@cognitiveedgeclinic.com": {
+    email: "vip.member@cognitiveedgeclinic.com",
+    salt: "a495f6f631754fa7d3f2f15fb532f6db",
+    hash: "4fe492f1cdfb88e713dc5e107cccab44fd4d4042395c26d788be2f89d042c8a3de1a3998c8927e11122e983582909d50971aaf5e2e3092e1ec7db8cab141568e",
+    passwordHash: "a495f6f631754fa7d3f2f15fb532f6db:4fe492f1cdfb88e713dc5e107cccab44fd4d4042395c26d788be2f89d042c8a3de1a3998c8927e11122e983582909d50971aaf5e2e3092e1ec7db8cab141568e",
+    role: "client",
+    clientName: "Demo VIP Concierge Member",
+    createdAt: "2026-09-27T15:00:00.000Z",
+  },
+};
+
 const memoryStore: Map<string, UserRecord> =
   globalThis.__CLINIC_USER_STORE_CACHE__ ?? new Map<string, UserRecord>();
 globalThis.__CLINIC_USER_STORE_CACHE__ = memoryStore;
@@ -104,7 +152,7 @@ function getSafeBlobStore(storeName: string = "users") {
 }
 
 /**
- * Find user by email across local disk storage and Netlify Blobs.
+ * Find user by email across local disk storage, Netlify Blobs, and default seed repository.
  */
 export async function findUserByEmail(email: string): Promise<UserRecord | null> {
   const normalizedEmail = email.toLowerCase().trim();
@@ -118,18 +166,7 @@ export async function findUserByEmail(email: string): Promise<UserRecord | null>
     };
   }
 
-  // 2. Always check local disk first in development or as fallback
-  const localUsers = getLocalUsers();
-  if (localUsers[normalizedEmail]) {
-    const u = localUsers[normalizedEmail];
-    memoryStore.set(normalizedEmail, u);
-    return {
-      ...u,
-      passwordHash: u.passwordHash || (u.salt && u.hash ? `${u.salt}:${u.hash}` : ""),
-    };
-  }
-
-  // 3. Query Netlify Blobs if configured (production or Netlify dev CLI)
+  // 2. Query Netlify Blobs if configured (takes precedence in production so updates persist)
   try {
     const store = getSafeBlobStore("users");
     if (store) {
@@ -145,7 +182,38 @@ export async function findUserByEmail(email: string): Promise<UserRecord | null>
     }
   } catch {
     // Suppress Netlify Blobs connection errors in pure localhost mode
-    console.warn("[AUTH_STORE] Netlify Blobs unavailable, using local store.");
+  }
+
+  // 3. Always check local disk in development or when available
+  const localUsers = getLocalUsers();
+  if (localUsers[normalizedEmail]) {
+    const u = localUsers[normalizedEmail];
+    memoryStore.set(normalizedEmail, u);
+    return {
+      ...u,
+      passwordHash: u.passwordHash || (u.salt && u.hash ? `${u.salt}:${u.hash}` : ""),
+    };
+  }
+
+  // 4. Fallback to default pre-provisioned clinical seed users
+  if (DEFAULT_SEED_USERS[normalizedEmail]) {
+    const seedUser = DEFAULT_SEED_USERS[normalizedEmail];
+    memoryStore.set(normalizedEmail, seedUser);
+
+    // Opportunistically persist seed user to Netlify Blobs if connected
+    try {
+      const store = getSafeBlobStore("users");
+      if (store) {
+        await store.setJSON(normalizedEmail, seedUser);
+      }
+    } catch {
+      // Non-fatal
+    }
+
+    return {
+      ...seedUser,
+      passwordHash: seedUser.passwordHash || (seedUser.salt && seedUser.hash ? `${seedUser.salt}:${seedUser.hash}` : ""),
+    };
   }
 
   return null;
@@ -248,9 +316,16 @@ export async function deleteUser(email: string): Promise<boolean> {
 }
 
 /**
- * List all users from local store
+ * List all users across seed repository, local store, and memory
  */
 export async function getAllUsers(): Promise<UserRecord[]> {
   const localUsers = getLocalUsers();
-  return Object.values(localUsers);
+  const allUsersMap: Record<string, UserRecord> = {
+    ...DEFAULT_SEED_USERS,
+    ...localUsers,
+  };
+  memoryStore.forEach((user, email) => {
+    allUsersMap[email] = user;
+  });
+  return Object.values(allUsersMap);
 }
