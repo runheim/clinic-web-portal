@@ -52,7 +52,16 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Parse & Validate Payload
-    let body: { email?: string; password?: string; role?: string; clientName?: string };
+    let body: {
+      email?: string;
+      password?: string;
+      role?: string;
+      clientName?: string;
+      firstName?: string;
+      lastName?: string;
+      phone?: string;
+      membershipTier?: string;
+    };
     try {
       body = await request.json();
     } catch {
@@ -62,7 +71,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { email, password, role = "client", clientName } = body;
+    const {
+      email,
+      password,
+      role = "client",
+      clientName,
+      firstName,
+      lastName,
+      phone,
+      membershipTier,
+    } = body;
 
     if (!email || typeof email !== "string" || !email.includes("@")) {
       return NextResponse.json(
@@ -94,12 +112,24 @@ export async function POST(request: NextRequest) {
     const { salt, hash } = hashPassword(password);
     const createdAt = new Date().toISOString();
 
+    const resolvedClientName =
+      (typeof clientName === "string" && clientName.trim()) ||
+      (firstName && lastName ? `${firstName.trim()} ${lastName.trim()}` : firstName?.trim() || undefined);
+
+    const resolvedTier =
+      (typeof membershipTier === "string" && membershipTier.trim()) ||
+      (normalizedRole === "admin" ? "Clinical Enclave Admin" : "Foundation");
+
     await saveMember({
       email: normalizedEmail,
       salt,
       hash,
       role: normalizedRole,
-      clientName: typeof clientName === "string" ? clientName.trim() : undefined,
+      clientName: resolvedClientName,
+      firstName: typeof firstName === "string" ? firstName.trim() : undefined,
+      lastName: typeof lastName === "string" ? lastName.trim() : undefined,
+      phone: typeof phone === "string" ? phone.trim() : undefined,
+      membershipTier: resolvedTier,
       createdAt,
     });
 
@@ -112,7 +142,11 @@ export async function POST(request: NextRequest) {
         user: {
           email: normalizedEmail,
           role: normalizedRole,
-          clientName: clientName || null,
+          clientName: resolvedClientName || null,
+          firstName: firstName || null,
+          lastName: lastName || null,
+          phone: phone || null,
+          membershipTier: resolvedTier,
           createdAt,
         },
         spruceMessage,

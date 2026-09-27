@@ -12,6 +12,10 @@ export interface UserRecord {
   hash?: string;
   role: "client" | "admin";
   clientName?: string;
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  membershipTier?: string;
   createdAt: string;
   resetToken?: string | null;
   resetTokenExpiry?: number | null;
@@ -21,6 +25,36 @@ export interface UserRecord {
     counter: number;
     createdAt: string;
   }>;
+}
+
+export function parseNames(
+  firstName?: string,
+  lastName?: string,
+  clientName?: string,
+  email?: string
+): { firstName: string; lastName: string } {
+  if (firstName && lastName) {
+    return { firstName: firstName.trim(), lastName: lastName.trim() };
+  }
+  if (clientName && clientName.trim()) {
+    const parts = clientName.trim().split(/\s+/);
+    if (parts.length === 1) {
+      return { firstName: parts[0], lastName: "—" };
+    }
+    const last = parts[parts.length - 1];
+    const first = parts.slice(0, parts.length - 1).join(" ");
+    return { firstName: first, lastName: last };
+  }
+  if (email) {
+    const namePart = email.split("@")[0];
+    const parts = namePart.split(/[._-]/);
+    if (parts.length >= 2) {
+      const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+      return { firstName: cap(parts[0]), lastName: cap(parts[1]) };
+    }
+    return { firstName: namePart, lastName: "—" };
+  }
+  return { firstName: "—", lastName: "—" };
 }
 
 // In-memory cache for fast hot reload and test execution
@@ -36,6 +70,10 @@ export const DEFAULT_SEED_USERS: Record<string, UserRecord> = {
     hash: "de4fae1cd1ca06895b46c5084094dd72a2b01f15c407331b2d5f315355d776e98eb3c5841cc818349c818058868401507e85c9395b77c46555d8274d588203ac",
     role: "admin",
     clientName: "Dr. David Andreas Runheim",
+    firstName: "David Andreas",
+    lastName: "Runheim",
+    phone: "+1 (743) 333-0880",
+    membershipTier: "Clinical Enclave Admin",
     createdAt: "2026-09-27T15:26:40.333Z",
   },
   "coordinator@cognitiveedge.com": {
@@ -44,7 +82,11 @@ export const DEFAULT_SEED_USERS: Record<string, UserRecord> = {
     salt: "ee9b79b9f91752d47fcdccc93be7f309",
     hash: "f5940ce4e61d6f3d0817515f0597cfd7f974f8844b4b37491f03d536b12e9760d7daded13fa1d2784fa867888ce31bdd3016763d24a5ef1a74ca36456853d3d4",
     role: "admin",
-    clientName: "Clinic Coordinator",
+    clientName: "Clinical Coordinator",
+    firstName: "Care",
+    lastName: "Coordinator",
+    phone: "+1 (743) 333-0880",
+    membershipTier: "Clinical Staff / Coordinator",
     createdAt: "2026-09-27T12:27:16.585Z",
   },
   "admin@cognitiveedgeclinic.com": {
@@ -54,15 +96,10 @@ export const DEFAULT_SEED_USERS: Record<string, UserRecord> = {
     passwordHash: "7304396fa3aabd9afac91c68d55fd220:3e8f8fc832232d8cf1404d6216cab718fcef606086c6cffa6ec50b9bd3fb24a39ce1873708bfde73f0a8d96ff6a40fb34bd01a31c5cbe3f14a2b115eeab98768",
     role: "admin",
     clientName: "Clinical Administrator",
-    createdAt: "2026-09-27T15:00:00.000Z",
-  },
-  "client.standard@cognitiveedgeclinic.com": {
-    email: "client.standard@cognitiveedgeclinic.com",
-    salt: "75b31572eeee8dc1aac662b0440682ae",
-    hash: "96e27e58603646d68e4dc1465fc5966cdd79486e9edaad899d58324602265d35e5a0680b54251efcbe350562618bd07939ad47ded225d3ecf262c7dfa11c6e74",
-    passwordHash: "75b31572eeee8dc1aac662b0440682ae:96e27e58603646d68e4dc1465fc5966cdd79486e9edaad899d58324602265d35e5a0680b54251efcbe350562618bd07939ad47ded225d3ecf262c7dfa11c6e74",
-    role: "client",
-    clientName: "Demo Standard Member",
+    firstName: "Clinical",
+    lastName: "Administrator",
+    phone: "+1 (743) 333-0880",
+    membershipTier: "Clinical Enclave Admin",
     createdAt: "2026-09-27T15:00:00.000Z",
   },
   "vip.member@cognitiveedgeclinic.com": {
@@ -71,7 +108,24 @@ export const DEFAULT_SEED_USERS: Record<string, UserRecord> = {
     hash: "4fe492f1cdfb88e713dc5e107cccab44fd4d4042395c26d788be2f89d042c8a3de1a3998c8927e11122e983582909d50971aaf5e2e3092e1ec7db8cab141568e",
     passwordHash: "a495f6f631754fa7d3f2f15fb532f6db:4fe492f1cdfb88e713dc5e107cccab44fd4d4042395c26d788be2f89d042c8a3de1a3998c8927e11122e983582909d50971aaf5e2e3092e1ec7db8cab141568e",
     role: "client",
-    clientName: "Demo VIP Concierge Member",
+    clientName: "Alexander Vance",
+    firstName: "Alexander",
+    lastName: "Vance",
+    phone: "+1 (336) 555-0142",
+    membershipTier: "Concierge VIP",
+    createdAt: "2026-09-27T15:00:00.000Z",
+  },
+  "client.standard@cognitiveedgeclinic.com": {
+    email: "client.standard@cognitiveedgeclinic.com",
+    salt: "75b31572eeee8dc1aac662b0440682ae",
+    hash: "96e27e58603646d68e4dc1465fc5966cdd79486e9edaad899d58324602265d35e5a0680b54251efcbe350562618bd07939ad47ded225d3ecf262c7dfa11c6e74",
+    passwordHash: "75b31572eeee8dc1aac662b0440682ae:96e27e58603646d68e4dc1465fc5966cdd79486e9edaad899d58324602265d35e5a0680b54251efcbe350562618bd07939ad47ded225d3ecf262c7dfa11c6e74",
+    role: "client",
+    clientName: "Marcus Sterling",
+    firstName: "Marcus",
+    lastName: "Sterling",
+    phone: "+1 (336) 555-0189",
+    membershipTier: "Foundation",
     createdAt: "2026-09-27T15:00:00.000Z",
   },
 };
@@ -320,12 +374,46 @@ export async function deleteUser(email: string): Promise<boolean> {
  */
 export async function getAllUsers(): Promise<UserRecord[]> {
   const localUsers = getLocalUsers();
-  const allUsersMap: Record<string, UserRecord> = {
-    ...DEFAULT_SEED_USERS,
-    ...localUsers,
-  };
+  const allUsersMap: Record<string, UserRecord> = {};
+
+  // 1. Initialize with default seed repository
+  for (const [email, seed] of Object.entries(DEFAULT_SEED_USERS)) {
+    allUsersMap[email] = { ...seed };
+  }
+
+  // 2. Merge local storage records, preserving seed phone/tier if unset
+  for (const [email, local] of Object.entries(localUsers)) {
+    const existing = allUsersMap[email];
+    if (existing) {
+      allUsersMap[email] = {
+        ...existing,
+        ...local,
+        phone: local.phone || existing.phone,
+        membershipTier: local.membershipTier || existing.membershipTier,
+        firstName: local.firstName || existing.firstName,
+        lastName: local.lastName || existing.lastName,
+      };
+    } else {
+      allUsersMap[email] = local;
+    }
+  }
+
+  // 3. Merge in-memory records
   memoryStore.forEach((user, email) => {
-    allUsersMap[email] = user;
+    const existing = allUsersMap[email];
+    if (existing) {
+      allUsersMap[email] = {
+        ...existing,
+        ...user,
+        phone: user.phone || existing.phone,
+        membershipTier: user.membershipTier || existing.membershipTier,
+        firstName: user.firstName || existing.firstName,
+        lastName: user.lastName || existing.lastName,
+      };
+    } else {
+      allUsersMap[email] = user;
+    }
   });
+
   return Object.values(allUsersMap);
 }

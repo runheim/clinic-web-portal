@@ -10,6 +10,10 @@ export interface MemberRecord {
   createdAt: string;
   role?: "admin" | "client";
   clientName?: string;
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  membershipTier?: string;
   passkeyCredentials?: Array<{
     id: string;
     publicKey: string;
@@ -91,6 +95,10 @@ export async function getMember(email: string): Promise<MemberRecord | null> {
       hash,
       role: user.role,
       clientName: user.clientName,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      phone: user.phone,
+      membershipTier: user.membershipTier,
       createdAt: user.createdAt,
       passkeyCredentials: user.passkeyCredentials,
     };
@@ -115,6 +123,10 @@ export async function saveMember(member: MemberRecord): Promise<void> {
     hash: member.hash,
     role: member.role || "client",
     clientName: member.clientName,
+    firstName: member.firstName,
+    lastName: member.lastName,
+    phone: member.phone,
+    membershipTier: member.membershipTier,
     createdAt: member.createdAt,
     passkeyCredentials: member.passkeyCredentials,
   });
