@@ -129,6 +129,15 @@ export default function ServicesPage() {
                       </button>
 
                       <Link
+                        href={`/services/${service.id}`}
+                        className="font-mono text-xs uppercase tracking-wider text-slate-300 hover:text-champagne-gold inline-flex items-center gap-1.5 py-2.5 px-4 rounded-full bg-canvas-obsidian border border-border-midnight hover:border-champagne-gold/40 transition-all"
+                        title={`View dedicated ${service.title} clinical protocol dossier`}
+                      >
+                        <span>Full Dossier</span>
+                        <span>↗</span>
+                      </Link>
+
+                      <Link
                         href="/consultation"
                         className="font-mono text-xs uppercase tracking-wider text-[#D4AF37] hover:text-[#E6C65C] inline-flex items-center gap-1.5 py-2.5 px-4 rounded-full bg-canvas-obsidian border border-border-midnight hover:border-champagne-gold/40 transition-all"
                       >

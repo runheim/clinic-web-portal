@@ -41,7 +41,15 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Parse & Validate Request Body
-    const body = await request.json();
+    let body: { currentPassword?: string; newPassword?: string };
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        { error: "Invalid JSON payload." },
+        { status: 400, headers: rlHeaders }
+      );
+    }
     const { currentPassword, newPassword } = body;
 
     if (!currentPassword || typeof currentPassword !== "string") {

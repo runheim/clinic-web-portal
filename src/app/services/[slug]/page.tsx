@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { servicesData } from "@/data/servicesData";
 import { BookingModal } from "@/components/marketing/BookingModal";
 import { ModalityArtwork } from "@/components/visualizations/ModalityVisualizations";
+import { TmsFluxCanvas } from "@/components/simulators/tms/TmsFluxCanvas";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -28,6 +29,8 @@ const SLUG_ALIASES: Record<string, string> = {
   "early-dementia-prevention": "dementia-prevention",
   hormones: "hormone-optimization",
   "precision-hormone-optimization": "hormone-optimization",
+  infusions: "mitochondrial-bioenergetics",
+  "nad-bdnf": "bdnf-synaptic-preservation",
 };
 
 export default function ServiceDetailPage({ params }: PageProps) {
@@ -234,6 +237,25 @@ export default function ServiceDetailPage({ params }: PageProps) {
             * All protocol candidates undergo physician-led biochemical validation and contraindication clearance before intervention deployment.
           </p>
         </div>
+
+        {/* Interactive Biophysics Simulator (TMS Modality Exclusive) */}
+        {targetSlug === "tms-neuromodulation" && (
+          <section className="bg-surface-midnight border border-border-midnight rounded-xl p-6 sm:p-8 space-y-6 shadow-2xl">
+            <div className="space-y-1">
+              <div className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-widest text-champagne-gold">
+                <span>✦</span>
+                <span>Interactive Biophysics Simulator</span>
+              </div>
+              <h2 className="font-display text-2xl text-text-surface">
+                DLPFC Magnetic Field &amp; Cortical Depolarization Simulator
+              </h2>
+              <p className="font-body text-xs text-text-surface-variant max-w-3xl">
+                Explore real-time induced electric field penetration, coil orientation angle distortion, and threshold depolarization depth across cranial tissue layers.
+              </p>
+            </div>
+            <TmsFluxCanvas />
+          </section>
+        )}
 
         {/* Inline Cal.com Booking CTA */}
         <div className="p-8 rounded-xl bg-gradient-to-r from-surface-midnight via-canvas-obsidian to-surface-midnight border border-border-gold-accent text-center space-y-6">

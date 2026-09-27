@@ -18,7 +18,15 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const body = await request.json();
+    let body: { token?: string; password?: string };
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        { error: "Invalid JSON payload." },
+        { status: 400, headers: rlHeaders }
+      );
+    }
     const { token, password } = body;
 
     if (!token || typeof token !== "string") {
