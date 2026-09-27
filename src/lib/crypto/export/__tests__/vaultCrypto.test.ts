@@ -267,6 +267,28 @@ describe("VaultCrypto Engine - In-Browser AES-GCM-256 Client-Side Export", () =>
       );
     });
 
+    it("should reject envelope with excessive PBKDF2 iterations (> 600,000)", async () => {
+      const tampered = new Uint8Array(baseEnvelopeBytes);
+      const view = new DataView(tampered.buffer, tampered.byteOffset, tampered.byteLength);
+      view.setUint32(9, 1_000_000, false); // 1 million iterations
+
+      const armoredTampered = `${ARMOR_HEADER}\n${bytesToBase64(tampered)}\n${ARMOR_FOOTER}`;
+      await expect(decryptVaultPayload(armoredTampered, masterPassphrase)).rejects.toThrow(
+        /outside valid bounds/i
+      );
+    });
+
+    it("should reject envelope with insufficient PBKDF2 iterations (< 10,000)", async () => {
+      const tampered = new Uint8Array(baseEnvelopeBytes);
+      const view = new DataView(tampered.buffer, tampered.byteOffset, tampered.byteLength);
+      view.setUint32(9, 1_000, false); // 1,000 iterations
+
+      const armoredTampered = `${ARMOR_HEADER}\n${bytesToBase64(tampered)}\n${ARMOR_FOOTER}`;
+      await expect(decryptVaultPayload(armoredTampered, masterPassphrase)).rejects.toThrow(
+        /outside valid bounds/i
+      );
+    });
+
     it("should reject truncated or incomplete envelopes", async () => {
       // Minimum is 89 bytes
       const truncated = baseEnvelopeBytes.subarray(0, 40);

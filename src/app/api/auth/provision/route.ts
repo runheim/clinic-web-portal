@@ -37,12 +37,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Role check: Only admin/owner can provision credentials
-    const isAuthorizedAdmin =
-      session.role === "admin" ||
-      session.email.toLowerCase().includes("admin") ||
-      session.email.toLowerCase().includes("owner") ||
-      session.email.toLowerCase().includes("runheim");
+    const isAuthorizedAdmin = session.role === "admin";
 
     if (!isAuthorizedAdmin) {
       return NextResponse.json(

@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { authenticated: true, email: session.email },
+      { authenticated: true, email: session.email, role: session.role },
       { status: 200, headers: rlHeaders }
     );
   } catch {
@@ -135,7 +135,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { authenticated: true, email: session.email },
+      { authenticated: true, email: session.email, role: session.role },
       { status: 200, headers: rlHeaders }
     );
   } catch {

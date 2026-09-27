@@ -203,6 +203,7 @@ describe("API Security Battery: Session Security & Cookie Hardening", () => {
       expect(json).toEqual({
         authenticated: true,
         email,
+        role: "client",
       });
     });
   });
@@ -313,6 +314,7 @@ describe("API Security Battery: Session Security & Cookie Hardening", () => {
       expect(json).toEqual({
         authenticated: true,
         email,
+        role: "client",
       });
     });
 
@@ -353,6 +355,7 @@ describe("API Security Battery: Session Security & Cookie Hardening", () => {
       expect(json).toEqual({
         authenticated: true,
         email,
+        role: "client",
       });
     });
 

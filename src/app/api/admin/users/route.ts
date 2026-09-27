@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import crypto from "node:crypto";
 import { getMember, saveMember, hashPassword, verifySessionToken } from "@/lib/auth/server";
 import { getAllUsers, parseNames } from "@/lib/auth/userStore";
 import { checkRateLimit, getClientIp, getRateLimitHeaders } from "@/lib/security/ratelimit/tokenBucket";
@@ -42,11 +43,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const isAuthorizedAdmin =
-      session.role === "admin" ||
-      session.email.toLowerCase().includes("admin") ||
-      session.email.toLowerCase().includes("owner") ||
-      session.email.toLowerCase().includes("runheim");
+    const isAuthorizedAdmin = session.role === "admin";
 
     if (!isAuthorizedAdmin) {
       return NextResponse.json(
@@ -138,11 +135,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Role check: Only admin/owner can provision credentials
-    const isAuthorizedAdmin =
-      session.role === "admin" ||
-      session.email.toLowerCase().includes("admin") ||
-      session.email.toLowerCase().includes("owner") ||
-      session.email.toLowerCase().includes("runheim");
+    const isAuthorizedAdmin = session.role === "admin";
 
     if (!isAuthorizedAdmin) {
       return NextResponse.json(
@@ -302,11 +295,7 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    const isAuthorizedAdmin =
-      session.role === "admin" ||
-      session.email.toLowerCase().includes("admin") ||
-      session.email.toLowerCase().includes("owner") ||
-      session.email.toLowerCase().includes("runheim");
+    const isAuthorizedAdmin = session.role === "admin";
 
     if (!isAuthorizedAdmin) {
       return NextResponse.json(
@@ -351,12 +340,12 @@ export async function PATCH(request: NextRequest) {
       const symbols = "!@#$%^&*";
       const all = upper + lower + digits + symbols;
       tempPass = "";
-      tempPass += upper[Math.floor(Math.random() * upper.length)];
-      tempPass += lower[Math.floor(Math.random() * lower.length)];
-      tempPass += digits[Math.floor(Math.random() * digits.length)];
-      tempPass += symbols[Math.floor(Math.random() * symbols.length)];
+      tempPass += upper[crypto.randomInt(0, upper.length)];
+      tempPass += lower[crypto.randomInt(0, lower.length)];
+      tempPass += digits[crypto.randomInt(0, digits.length)];
+      tempPass += symbols[crypto.randomInt(0, symbols.length)];
       for (let i = 4; i < 14; i++) {
-        tempPass += all[Math.floor(Math.random() * all.length)];
+        tempPass += all[crypto.randomInt(0, all.length)];
       }
     } else if (tempPass.length < 8) {
       return NextResponse.json(

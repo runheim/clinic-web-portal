@@ -11,11 +11,31 @@ interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
+const SLUG_ALIASES: Record<string, string> = {
+  neuromodulation: "tms-neuromodulation",
+  tms: "tms-neuromodulation",
+  peptides: "subcutaneous-peptides",
+  peptide: "subcutaneous-peptides",
+  emsella: "btl-emsella-pelvic-core",
+  photobiomodulation: "cerebral-photobiomodulation",
+  pbm: "cerebral-photobiomodulation",
+  glp1: "glp1-metabolic-optimization",
+  "glp-1": "glp1-metabolic-optimization",
+  mitochondria: "mitochondrial-bioenergetics",
+  mitochondrial: "mitochondrial-bioenergetics",
+  bdnf: "bdnf-synaptic-preservation",
+  dementia: "dementia-prevention",
+  "early-dementia-prevention": "dementia-prevention",
+  hormones: "hormone-optimization",
+  "precision-hormone-optimization": "hormone-optimization",
+};
+
 export default function ServiceDetailPage({ params }: PageProps) {
   const resolvedParams = use(params);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
 
-  const targetSlug = resolvedParams.slug === "neuromodulation" ? "tms-neuromodulation" : resolvedParams.slug;
+  const rawSlug = resolvedParams.slug?.toLowerCase().trim();
+  const targetSlug = SLUG_ALIASES[rawSlug] || rawSlug;
   const service = servicesData.find((s) => s.slug === targetSlug);
 
   if (!service) {

@@ -262,8 +262,8 @@ export function unpackVaultBinary(envelope: Uint8Array): {
   const view = new DataView(envelope.buffer, envelope.byteOffset, envelope.byteLength);
   const iterations = view.getUint32(9, false);
 
-  if (iterations < 10_000) {
-    throw new Error(`Insecure vault envelope: PBKDF2 iterations (${iterations}) below minimum threshold.`);
+  if (iterations < 10_000 || iterations > 600_000) {
+    throw new Error(`Insecure or excessive vault envelope: PBKDF2 iterations (${iterations}) outside valid bounds [10,000, 600,000].`);
   }
 
   let offset = 13;

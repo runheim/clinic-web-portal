@@ -7,6 +7,24 @@ import { sendPathwayInquiryEmail } from "@/lib/email/resend";
 
 export const DEFAULT_CLINICAL_RECIPIENT = "andreas.runheim@gmail.com";
 
+export const ALLOWED_CLINICAL_RECIPIENTS = new Set([
+  "andreas.runheim@gmail.com",
+  "coordinator@cognitiveedge.com",
+  "admin@cognitiveedgeclinic.com",
+  "intake@cognitiveedgeclinic.com",
+  "concierge.triage@domain.com",
+]);
+
+export function isAllowedClinicalRecipient(recipient?: string | null): boolean {
+  if (!recipient) return false;
+  const normalized = recipient.toLowerCase().trim();
+  return (
+    ALLOWED_CLINICAL_RECIPIENTS.has(normalized) ||
+    normalized.endsWith("@cognitiveedgeclinic.com") ||
+    normalized.endsWith("@cognitiveedge.com")
+  );
+}
+
 /**
  * Public Clinical Pre-Screening & Longevity Pathway Assessment Endpoint
  *
@@ -98,7 +116,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // 5. Handle pathway submission if email and selectedObjectives are provided
     if (email && selectedObjectives && selectedObjectives.length > 0) {
-      const recipient = targetRecipient || DEFAULT_CLINICAL_RECIPIENT;
+      const recipient =
+        targetRecipient && isAllowedClinicalRecipient(targetRecipient)
+          ? targetRecipient.toLowerCase().trim()
+          : DEFAULT_CLINICAL_RECIPIENT;
 
       // Format clinical intake record
       const formattedIntake = [

@@ -1,12 +1,33 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
+import { checkRateLimit, getClientIp, getRateLimitHeaders } from "@/lib/security/ratelimit/tokenBucket";
+
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
 
 export async function POST(request: NextRequest) {
+  const ip = getClientIp(request);
+  const rateLimit = checkRateLimit(ip, "form");
+  const rlHeaders = getRateLimitHeaders(rateLimit);
+
+  if (!rateLimit.allowed) {
+    return NextResponse.json(
+      { error: "Too many consultation requests. Please try again later." },
+      { status: 429, headers: rlHeaders }
+    );
+  }
+
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
     return NextResponse.json(
       { error: "RESEND_API_KEY environment variable not configured" },
-      { status: 500 }
+      { status: 500, headers: rlHeaders }
     );
   }
 
@@ -20,20 +41,26 @@ export async function POST(request: NextRequest) {
     if (!name || (!email && !phone)) {
       return NextResponse.json(
         { error: "Name and either email or phone are required." },
-        { status: 400 }
+        { status: 400, headers: rlHeaders }
       );
     }
+
+    const safeName = escapeHtml(String(name));
+    const safeEmail = email ? escapeHtml(String(email)) : "";
+    const safePhone = phone ? escapeHtml(String(phone)) : "";
+    const safeFocus = escapeHtml(String(clinicalFocus));
+    const safeNotes = notes ? escapeHtml(String(notes)) : "";
 
     const emailHtml = `
 <div style="font-family: sans-serif; background: #070B12; color: #E2E8F0; padding: 24px; border-radius: 8px;">
   <h2 style="color: #D4AF37; margin-top: 0;">New Free Consultation Request</h2>
-  <p><strong>Name:</strong> ${name}</p>
-  <p><strong>Email:</strong> ${email || "Not provided"}</p>
-  <p><strong>Phone:</strong> ${phone || "Not provided"}</p>
-  <p><strong>Area of Clinical Focus:</strong> ${clinicalFocus}</p>
+  <p><strong>Name:</strong> ${safeName}</p>
+  <p><strong>Email:</strong> ${safeEmail || "Not provided"}</p>
+  <p><strong>Phone:</strong> ${safePhone || "Not provided"}</p>
+  <p><strong>Area of Clinical Focus:</strong> ${safeFocus}</p>
   <p><strong>Clinical Notes / Inquiry:</strong></p>
   <blockquote style="border-left: 3px solid #D4AF37; margin: 12px 0; padding-left: 12px; color: #94A3B8;">
-    ${notes || "No additional notes provided."}
+    ${safeNotes || "No additional notes provided."}
   </blockquote>
   <hr style="border: 0; border-top: 1px solid #1E293B; margin: 20px 0;" />
   <p style="font-size: 12px; color: #64748B;">Dispatched via Cognitive Edge Clinic Secure Enclave • Winston-Salem, NC</p>
@@ -70,19 +97,19 @@ export async function POST(request: NextRequest) {
       console.error("Resend dispatch error:", sendResult.error);
       return NextResponse.json(
         { error: sendResult.error.message || "Failed to dispatch consultation email." },
-        { status: 502 }
+        { status: 502, headers: rlHeaders }
       );
     }
 
     return NextResponse.json(
       { success: true, message: "Consultation request dispatched", data: sendResult.data },
-      { status: 200 }
+      { status: 200, headers: rlHeaders }
     );
   } catch (err) {
     console.error("Consultation route exception:", err);
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Internal Server Error" },
-      { status: 500 }
+      { error: "Failed to process consultation request." },
+      { status: 500, headers: rlHeaders }
     );
   }
 }

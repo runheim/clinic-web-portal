@@ -118,12 +118,7 @@ export default function AdminProvisioningPage() {
       .then((res) => res.json())
       .then((data) => {
         if (data.authenticated) {
-          const emailStr = (data.email || "").toLowerCase();
-          const hasAdminRole =
-            data.role === "admin" ||
-            emailStr.includes("admin") ||
-            emailStr.includes("owner") ||
-            emailStr.includes("runheim");
+          const hasAdminRole = data.role === "admin";
 
           setIsAdmin(hasAdminRole);
           setUserEmail(data.email);

@@ -3,7 +3,10 @@ import path from "path";
 import { getStore } from "@netlify/blobs";
 
 const LOCAL_STORAGE_DIR = path.join(process.cwd(), ".data");
-const LOCAL_STORAGE_PATH = path.join(LOCAL_STORAGE_DIR, "members.json");
+const isTestEnv = process.env.NODE_ENV === "test" || Boolean(process.env.JEST_WORKER_ID);
+const LOCAL_STORAGE_PATH = isTestEnv
+  ? path.join(LOCAL_STORAGE_DIR, "test-members.json")
+  : path.join(LOCAL_STORAGE_DIR, "members.json");
 
 export interface UserRecord {
   email: string;
@@ -108,7 +111,7 @@ export const DEFAULT_SEED_USERS: Record<string, UserRecord> = {
     hash: "4fe492f1cdfb88e713dc5e107cccab44fd4d4042395c26d788be2f89d042c8a3de1a3998c8927e11122e983582909d50971aaf5e2e3092e1ec7db8cab141568e",
     passwordHash: "a495f6f631754fa7d3f2f15fb532f6db:4fe492f1cdfb88e713dc5e107cccab44fd4d4042395c26d788be2f89d042c8a3de1a3998c8927e11122e983582909d50971aaf5e2e3092e1ec7db8cab141568e",
     role: "client",
-    clientName: "Alexander Vance",
+    clientName: "Alexander Vance (VIP Member)",
     firstName: "Alexander",
     lastName: "Vance",
     phone: "+1 (336) 555-0142",
@@ -338,6 +341,25 @@ export async function saveUser(userData: UserRecord): Promise<void> {
     // Suppress Netlify Blobs connection errors in pure localhost mode
     console.warn("[AUTH_STORE] Netlify Blobs unavailable for write, saved to local store.");
   }
+
+  // 3. Synchronize with server.ts members cache if active
+  if (globalThis.__CLINIC_MEMBERS_CACHE__) {
+    const salt = record.salt || (record.passwordHash?.includes(":") ? record.passwordHash.split(":")[0] : "");
+    const hash = record.hash || (record.passwordHash?.includes(":") ? record.passwordHash.split(":")[1] : record.passwordHash || "");
+    globalThis.__CLINIC_MEMBERS_CACHE__.set(normalizedEmail, {
+      email: normalizedEmail,
+      salt,
+      hash,
+      role: record.role,
+      clientName: record.clientName,
+      firstName: record.firstName,
+      lastName: record.lastName,
+      phone: record.phone,
+      membershipTier: record.membershipTier,
+      createdAt: record.createdAt,
+      passkeyCredentials: record.passkeyCredentials,
+    });
+  }
 }
 
 /**
@@ -346,6 +368,10 @@ export async function saveUser(userData: UserRecord): Promise<void> {
 export async function deleteUser(email: string): Promise<boolean> {
   const normalizedEmail = email.toLowerCase().trim();
   memoryStore.delete(normalizedEmail);
+
+  if (globalThis.__CLINIC_MEMBERS_CACHE__) {
+    globalThis.__CLINIC_MEMBERS_CACHE__.delete(normalizedEmail);
+  }
 
   try {
     const localUsers = getLocalUsers();
@@ -370,7 +396,7 @@ export async function deleteUser(email: string): Promise<boolean> {
 }
 
 /**
- * List all users across seed repository, local store, and memory
+ * List all users across seed repository, local store, memory, and Netlify Blobs
  */
 export async function getAllUsers(): Promise<UserRecord[]> {
   const localUsers = getLocalUsers();
@@ -414,6 +440,34 @@ export async function getAllUsers(): Promise<UserRecord[]> {
       allUsersMap[email] = user;
     }
   });
+
+  // 4. Merge Netlify Blobs records if connected
+  try {
+    const store = getSafeBlobStore("users");
+    if (store && typeof store.list === "function") {
+      const listResult = await store.list();
+      const blobs = listResult?.blobs || [];
+      for (const item of blobs) {
+        const key = item.key.toLowerCase().trim();
+        if (!allUsersMap[key]) {
+          try {
+            const blobUser = (await store.get(item.key, { type: "json" })) as UserRecord | null;
+            if (blobUser && blobUser.email) {
+              const bEmail = blobUser.email.toLowerCase().trim();
+              allUsersMap[bEmail] = {
+                ...blobUser,
+                email: bEmail,
+              };
+            }
+          } catch {
+            // Non-fatal if a blob item fails to parse
+          }
+        }
+      }
+    }
+  } catch {
+    // Non-fatal if Netlify Blobs is not reachable in current context
+  }
 
   return Object.values(allUsersMap);
 }

@@ -95,12 +95,7 @@ export const VaultInner: React.FC<VaultInnerProps> = ({
   const [isAuthenticated, setIsAuthenticated] = useState(initialAuthenticated);
   const [memberEmail, setMemberEmail] = useState<string | null>(initialEmail);
   const [memberRole, setMemberRole] = useState<"admin" | "client">(
-    initialRole ||
-      (initialEmail?.toLowerCase().includes("admin") ||
-      initialEmail?.toLowerCase().includes("owner") ||
-      initialEmail?.toLowerCase().includes("runheim")
-        ? "admin"
-        : "client")
+    initialRole || "client"
   );
 
   // Form inputs (Email + Password only)
@@ -137,14 +132,7 @@ export const VaultInner: React.FC<VaultInnerProps> = ({
         if (data.authenticated) {
           setIsAuthenticated(true);
           setMemberEmail(data.email);
-          const emailLower = (data.email || "").toLowerCase();
-          const role =
-            data.role === "admin" ||
-            emailLower.includes("admin") ||
-            emailLower.includes("owner") ||
-            emailLower.includes("runheim")
-              ? "admin"
-              : "client";
+          const role = data.role === "admin" ? "admin" : "client";
           setMemberRole(role);
         }
       })
