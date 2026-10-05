@@ -3,7 +3,7 @@ import { canvasRenderer, verifyOgSignature } from "@/lib/og/canvasRenderer";
 import { checkRateLimit, getRateLimitHeaders } from "@/lib/security/ratelimit/tokenBucket";
 import { hasPrototypePollution, OgQuerySchema } from "@/lib/security/validation/schemas";
 
-export const runtime = "edge";
+export const runtime = "nodejs";
 
 /**
  * Edge endpoint serving dynamically generated and cryptographically signed

@@ -3,7 +3,7 @@
 # ==============================================================================
 # STAGE 1: Install Dependencies
 # ==============================================================================
-FROM node:20-alpine AS deps
+FROM node:22-alpine AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
@@ -13,7 +13,7 @@ RUN npm ci
 # ==============================================================================
 # STAGE 2: Build Application
 # ==============================================================================
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 WORKDIR /app
 
 COPY --from=deps /app/node_modules ./node_modules
@@ -25,14 +25,14 @@ ENV NODE_ENV=production
 RUN npm run build
 
 # ==============================================================================
-# STAGE 3: Minimal Production Runner (Zero-ePHI Isolated Enclave)
+# STAGE 3: Minimal Production Runner (Google Cloud Run / Isolated Enclave)
 # ==============================================================================
-FROM node:20-alpine AS runner
+FROM node:22-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
-ENV PORT=3000
+ENV PORT=8080
 ENV HOSTNAME="0.0.0.0"
 
 # Security: Run as dedicated non-root user
@@ -49,10 +49,10 @@ RUN rm -f /app/.env*
 
 USER nextjs
 
-EXPOSE 3000
+EXPOSE 8080
 
-# Zero-ePHI Healthcheck Endpoint
+# Healthcheck Endpoint
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1
+  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/api/health || exit 1
 
 CMD ["node", "server.js"]
